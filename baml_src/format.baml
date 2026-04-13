@@ -1,5 +1,5 @@
 function FormatAsGitHubIssue(input: IssueInput, classification: IssueClassification, enrichment: RepoEnrichment) -> IssueOutput {
-  client ClaudeSonnet
+  client OpenAIMini
   prompt #"
     You are a technical writer creating a well-structured GitHub issue from a user conversation.
 

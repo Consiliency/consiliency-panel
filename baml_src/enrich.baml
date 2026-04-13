@@ -1,5 +1,5 @@
 function EnrichWithRepoContext(input: IssueInput, classification: IssueClassification) -> RepoEnrichment {
-  client ClaudeSonnet
+  client GeminiFlash
   prompt #"
     You are a software engineering assistant helping enrich a bug report with repository context.
 

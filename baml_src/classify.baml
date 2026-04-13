@@ -1,5 +1,5 @@
 function ClassifyIssue(input: IssueInput) -> IssueClassification {
-  client ClaudeHaiku
+  client OpenAINano
   prompt #"
     You are a software issue triage assistant. Given a user conversation and technical metadata, classify the issue.
 
