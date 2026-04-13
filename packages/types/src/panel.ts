@@ -87,7 +87,7 @@ export interface IssuePreview {
 }
 
 export interface SubmissionPayload {
-  productKey: string;
+  productKey?: string; // derived server-side from the API key; optional on client
   githubLogin?: string;
   repo: string;
   transcript: ConversationTurn[];

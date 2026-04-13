@@ -1,3 +1,11 @@
 export { mountPanel } from "./mount";
 export { PanelProvider, usePanelContext } from "./PanelProvider";
 export { PanelButton } from "./floating/PanelButton";
+export { PanelSheet } from "./floating/PanelSheet";
+export { PanelChat } from "./chat/PanelChat";
+export { PreviewCard } from "./chat/PreviewCard";
+export { SubmitButton } from "./chat/SubmitButton";
+export { AnnotationEditor } from "./capture/AnnotationEditor";
+export { ScreenshotCapture } from "./capture/ScreenshotCapture";
+export { VoiceInput } from "./input/VoiceInput";
+export { FileAttachment } from "./input/FileAttachment";
