@@ -8,7 +8,18 @@
     "build": {
       "dependsOn": ["^build", "generate"],
       "inputs": ["src/**", "tsconfig.json", "package.json"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": [
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_KEY",
+        "PANEL_INTERNAL_SECRET",
+        "ANTHROPIC_API_KEY",
+        "GITHUB_TOKEN_GUEST",
+        "GITHUB_TOKEN_CONTRACTOR",
+        "GITHUB_TOKEN_TEAM",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN"
+      ]
     },
     "test": {
       "dependsOn": ["^build"],
