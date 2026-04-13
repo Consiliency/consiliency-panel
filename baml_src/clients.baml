@@ -4,7 +4,7 @@ generator lang_ts {
   version "0.219.0"
 }
 
-// Classification: fast + cheap — GPT-4.1 nano ($0.05/$0.20 per 1M tokens)
+// Classification: fast + cheap structured output — GPT-4.1 Nano ($0.05/$0.20 per 1M)
 client<llm> OpenAINano {
   provider openai
   options {
@@ -14,22 +14,26 @@ client<llm> OpenAINano {
   }
 }
 
-// Enrichment: long-context code reasoning — Gemini 2.5 Flash ($0.30/$2.50 per 1M tokens, 1M context)
-client<llm> GeminiFlash {
-  provider google-ai
+// Enrichment: repo context + code understanding — Gemini 4 31B via OpenRouter ($0.13/$0.38 per 1M)
+// Released April 2, 2026 — top 90% coding index on OpenRouter, native vision, 262K context
+client<llm> Gemma4 {
+  provider openai
   options {
-    model "gemini-2.5-flash"
+    model "google/gemma-4-31b-it"
+    base_url "https://openrouter.ai/api/v1"
+    api_key env.OPENROUTER_API_KEY
     max_tokens 4096
-    api_key env.GOOGLE_API_KEY
   }
 }
 
-// Formatting: structured output + instruction following — GPT-4.1 Mini ($0.20/$0.80 per 1M tokens)
-client<llm> OpenAIMini {
+// Formatting: structured GitHub issue output — Kimi K2.5 via OpenRouter ($0.38/$1.72 per 1M)
+// 1T total / 32B active MoE, 0.54% structured output error rate — best among open models
+client<llm> KimiK2 {
   provider openai
   options {
-    model "gpt-4.1-mini"
+    model "moonshotai/kimi-k2.5"
+    base_url "https://openrouter.ai/api/v1"
+    api_key env.OPENROUTER_API_KEY
     max_tokens 4096
-    api_key env.OPENAI_API_KEY
   }
 }
