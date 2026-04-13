@@ -1,6 +1,3 @@
 {
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @consiliency/panel-backend build",
-  "outputDirectory": "apps/backend/.next",
   "framework": "nextjs"
 }
