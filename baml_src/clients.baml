@@ -1,3 +1,9 @@
+generator lang_ts {
+  output_type "typescript"
+  output_dir "../"
+  version "0.220.0"
+}
+
 client<llm> ClaudeSonnet {
   provider anthropic
   options {

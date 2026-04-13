@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@boundaryml/baml": "^0.220.0",
     "@consiliency/panel-types": "workspace:*",
     "@octokit/rest": "^21.1.0",
     "@octokit/plugin-throttling": "^9.3.0",
