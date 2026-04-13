@@ -1,7 +1,7 @@
 generator lang_ts {
   output_type "typescript"
   output_dir "../"
-  version "0.219.0"
+  version "0.220.0"
 }
 
 // Classification: fast + cheap structured output — GPT-4.1 Nano ($0.05/$0.20 per 1M)
