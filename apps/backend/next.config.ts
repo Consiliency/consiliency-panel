@@ -1,12 +1,11 @@
 import type { NextConfig } from "next";
-import type { Configuration } from "webpack";
 
 const nextConfig: NextConfig = {
   // Mark BAML's native .node binary as external so webpack doesn't bundle it.
   // baml_client/index.ts lives outside apps/backend, so we also add a webpack
-  // externals function to catch the @boundaryml/* imports regardless of importer path.
+  // externals function to catch @boundaryml/* imports regardless of importer path.
   serverExternalPackages: ["@boundaryml/baml"],
-  webpack(config: Configuration, { isServer }: { isServer: boolean }) {
+  webpack(config, { isServer }) {
     if (isServer && Array.isArray(config.externals)) {
       config.externals.push(
         (
