@@ -1,6 +1,6 @@
 {
   "name": "@consiliency/panel-core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": false,
   "description": "Framework-agnostic core for @consiliency/panel",
   "main": "./src/index.ts",
@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "files": ["src"],
   "scripts": {
     "build": "tsc --noEmit",
     "test": "vitest run",

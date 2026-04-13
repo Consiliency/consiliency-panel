@@ -4,6 +4,23 @@ import type { ConversationTurn, PanelSubmission, SubmissionMetadata } from "@con
 
 // Internal-only route — called by after() in submit/route.ts
 // Protected by PANEL_INTERNAL_SECRET, not the public API key
+
+const MAX_TURN_CONTENT_LENGTH = 4000;
+
+/**
+ * Sanitize user-supplied transcript content before passing to BAML.
+ * Prevents prompt injection via oversized or control-character-laden strings.
+ */
+function sanitizeTranscript(turns: ConversationTurn[]): ConversationTurn[] {
+  return turns.map((turn) => ({
+    ...turn,
+    content: turn.content
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "") // strip non-printable control chars
+      .slice(0, MAX_TURN_CONTENT_LENGTH),
+  }));
+}
+
 function validateInternalSecret(req: Request): boolean {
   const auth = req.headers.get("authorization");
   const secret = process.env.PANEL_INTERNAL_SECRET;
@@ -90,7 +107,7 @@ export async function POST(
         };
 
         const issueInput = {
-          transcript: sub.transcript as ConversationTurn[],
+          transcript: sanitizeTranscript(sub.transcript as ConversationTurn[]),
           metadata: bamlMetadata,
           repo_context: repoContext,
           tier: sub.tier,

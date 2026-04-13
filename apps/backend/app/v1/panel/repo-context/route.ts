@@ -1,10 +1,13 @@
 import { resolveUserTier, unauthorized, validateApiKey } from "@/lib/auth";
+import { isRateLimited, tooManyRequests } from "@/lib/ratelimit";
 import { getGitHubClient, parseRepo } from "@/lib/github";
 import type { RepoContext } from "@consiliency/panel-types";
 
 export async function POST(req: Request): Promise<Response> {
   const key = await validateApiKey(req);
   if (!key) return unauthorized();
+
+  if (await isRateLimited(key.productKey)) return tooManyRequests();
 
   const body = (await req.json()) as {
     repo: string;

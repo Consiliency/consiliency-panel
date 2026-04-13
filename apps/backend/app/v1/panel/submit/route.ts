@@ -1,4 +1,5 @@
 import { resolveUserTier, unauthorized, validateApiKey } from "@/lib/auth";
+import { isRateLimited, tooManyRequests } from "@/lib/ratelimit";
 import { getServiceSupabase } from "@/lib/supabase";
 import type { SubmissionPayload } from "@consiliency/panel-types";
 import { after } from "next/server";
@@ -6,6 +7,8 @@ import { after } from "next/server";
 export async function POST(req: Request): Promise<Response> {
   const key = await validateApiKey(req);
   if (!key) return unauthorized();
+
+  if (await isRateLimited(key.productKey)) return tooManyRequests();
 
   let body: SubmissionPayload;
   try {
