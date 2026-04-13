@@ -11,12 +11,12 @@ function makeClient(token: string | undefined, tier: TrustTier): Octokit {
   return new ThrottledOctokit({
     auth: token,
     throttle: {
-      onRateLimit: (retryAfter: number, options: { method: string; url: string }, octokit: Octokit) => {
-        octokit.log.warn(`Rate limit hit for ${options.method} ${options.url}, retrying after ${retryAfter}s`);
+      onRateLimit: (retryAfter: number, options: { method: string; url: string }) => {
+        console.warn(`Rate limit hit for ${options.method} ${options.url}, retrying after ${retryAfter}s`);
         return true; // retry once
       },
-      onSecondaryRateLimit: (_retryAfter: number, options: { method: string; url: string }, octokit: Octokit) => {
-        octokit.log.warn(`Secondary rate limit for ${options.method} ${options.url}`);
+      onSecondaryRateLimit: (_retryAfter: number, options: { method: string; url: string }) => {
+        console.warn(`Secondary rate limit for ${options.method} ${options.url}`);
         return false;
       },
     },

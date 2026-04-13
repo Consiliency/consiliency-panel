@@ -19,7 +19,7 @@
     "@assistant-ui/react": "^0.10.0",
     "@floating-ui/react": "^0.26.0",
     "modern-screenshot": "^4.4.0",
-    "react-konva": "^18.2.10",
+    "react-konva": "^19.2.3",
     "perfect-freehand": "^1.2.2",
     "react-dropzone": "^14.3.0",
     "browser-image-compression": "^2.0.2",

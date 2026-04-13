@@ -14,7 +14,8 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@consiliency/panel-types": "workspace:*"
+    "@consiliency/panel-types": "workspace:*",
+    "modern-screenshot": "^4.4.0"
   },
   "devDependencies": {
     "typescript": "*",

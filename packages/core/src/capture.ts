@@ -9,11 +9,8 @@ export async function captureScreenshot(): Promise<Blob> {
   const blob = await domToBlob(document.body, {
     quality: 0.9,
     type: "image/png",
-    // Use Web Worker to keep main thread free
-    workerUrl: new URL(
-      "modern-screenshot/worker",
-      import.meta.url
-    ).toString(),
+    // workerUrl can be configured by the consumer for Web Worker offloading
+    // Leave unset here for maximum bundler compatibility
   });
 
   if (!blob) {
