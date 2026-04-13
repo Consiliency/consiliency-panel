@@ -1,0 +1,25 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "generate": {
+      "inputs": ["baml_src/**"],
+      "outputs": ["baml_client/**"]
+    },
+    "build": {
+      "dependsOn": ["^build", "generate"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "__tests__/**", "*.test.ts", "*.spec.ts"]
+    },
+    "lint": {
+      "inputs": ["src/**", "*.ts", "*.tsx"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

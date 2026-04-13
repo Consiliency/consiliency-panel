@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.next/
+.turbo/
+baml_client/
+*.local
+.env
+.env.*
+!.env.example
+.vercel/
+supabase/.branches/
+supabase/.temp/
+coverage/
+.baml_cache/

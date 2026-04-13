@@ -1,0 +1,28 @@
+{
+  "name": "@consiliency/panel-backend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@consiliency/panel-types": "workspace:*",
+    "@octokit/rest": "^21.1.0",
+    "@octokit/plugin-throttling": "^9.3.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "@upstash/ratelimit": "^2.0.0",
+    "@upstash/redis": "^1.34.0",
+    "next": "^15.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^18.3.0",
+    "typescript": "*",
+    "vitest": "^3.0.0"
+  }
+}
