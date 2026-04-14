@@ -206,7 +206,7 @@ export async function POST(
         console.error("Process pipeline error:", err);
         await supabase
           .from("panel_submissions")
-          .update({ status: "failed" })
+          .update({ status: "failed", error_message: err instanceof Error ? err.message : String(err) })
           .eq("id", id);
         send({ type: "error", message: err instanceof Error ? err.message : "Pipeline failed" });
       }
