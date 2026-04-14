@@ -21,7 +21,7 @@ export class PanelSDK {
     if (!config.repo) throw new Error("PanelSDK: repo is required");
 
     this.config = config;
-    this.client = new PanelApiClient({ apiUrl: config.apiUrl, apiKey: config.apiKey });
+    this.client = new PanelApiClient({ apiUrl: config.apiUrl, apiKey: config.apiKey, githubLogin: config.githubLogin });
     this.metadata = new MetadataCollector();
     this.modes = new ModeRegistry();
     this.voice = new VoiceInput();

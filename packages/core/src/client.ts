@@ -9,17 +9,21 @@ import type {
 export class PanelApiClient {
   private apiUrl: string;
   private apiKey: string;
+  private githubLogin: string | undefined;
 
-  constructor({ apiUrl, apiKey }: PanelApiClientConfig) {
+  constructor({ apiUrl, apiKey, githubLogin }: PanelApiClientConfig & { githubLogin?: string }) {
     this.apiUrl = apiUrl.replace(/\/$/, "");
     this.apiKey = apiKey;
+    this.githubLogin = githubLogin;
   }
 
   private headers(): HeadersInit {
-    return {
+    const h: Record<string, string> = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${this.apiKey}`,
     };
+    if (this.githubLogin) h["x-github-login"] = this.githubLogin;
+    return h;
   }
 
   async getCapabilities(): Promise<CapabilitiesResponse> {
