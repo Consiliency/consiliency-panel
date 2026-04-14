@@ -5,6 +5,8 @@ import type { ModeId, ProcessEvent, SubmissionPayload } from "@consiliency/panel
 interface SubmitButtonProps {
   modeId: ModeId;
   onDone: (issueUrl: string) => void;
+  componentHint?: string;
+  submissionEnhancer?: (payload: SubmissionPayload) => SubmissionPayload;
 }
 
 type SubmitPhase = "idle" | "submitting" | "classifying" | "creating" | "done" | "error";
@@ -18,7 +20,7 @@ const PHASE_LABELS: Record<SubmitPhase, string> = {
   error: "Failed — retry?",
 };
 
-export function SubmitButton({ modeId, onDone }: SubmitButtonProps) {
+export function SubmitButton({ modeId, onDone, componentHint, submissionEnhancer }: SubmitButtonProps) {
   const { sdk } = usePanelContext();
   const [phase, setPhase] = useState<SubmitPhase>("idle");
 
@@ -32,14 +34,22 @@ export function SubmitButton({ modeId, onDone }: SubmitButtonProps) {
       const consoleWarnings = sdk.metadata.collectConsoleWarnings();
       sdk.conversation.setMetadata(metadata);
 
-      const payload: SubmissionPayload = {
+      const basePayload: SubmissionPayload = {
         transcript: sdk.conversation.state.turns.filter((t) => t.content !== "__preview__"),
         metadata,
         screenshotUrl: sdk.conversation.state.screenshotUrl,
+        attachmentUrls: sdk.conversation.state.attachmentUrls,
         consoleErrors,
         consoleWarnings,
         repo: sdk.config.repo,
       };
+      if (sdk.config.navigationTracking) {
+        basePayload.navigationBreadcrumb = sdk.navigation.getBreadcrumb();
+      }
+      if (componentHint) {
+        basePayload.componentHint = componentHint;
+      }
+      const payload = submissionEnhancer ? submissionEnhancer(basePayload) : basePayload;
 
       const { id } = await sdk.client.submit(payload);
       setPhase("classifying");

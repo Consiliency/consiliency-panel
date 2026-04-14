@@ -85,6 +85,32 @@ describe("ConversationEngine", () => {
     expect(engine.getPreview()).toBeNull();
   });
 
+  it("addAttachment() stores AttachmentRef objects", () => {
+    engine.addAttachment({ url: "https://example.com/a.png", type: "screenshot", name: "a.png" });
+    engine.addAttachment({ url: "https://example.com/b.pdf", type: "file", name: "b.pdf" });
+    expect(engine.state.attachmentUrls).toHaveLength(2);
+    expect(engine.state.attachmentUrls?.[0]).toEqual({
+      url: "https://example.com/a.png",
+      type: "screenshot",
+      name: "a.png",
+    });
+    expect(engine.state.attachmentUrls?.[1].type).toBe("file");
+  });
+
+  it("getPreview() surfaces screenshotUrl and attachmentUrls", async () => {
+    await engine.start("feedback");
+    const feedbackMode = BUILT_IN_MODES.find((m) => m.id === "feedback")!;
+    for (let i = 0; i < feedbackMode.questions.length; i++) {
+      await engine.respond("feedback", `Answer ${i + 1}`);
+    }
+    engine.setScreenshotUrl("https://example.com/s.png");
+    engine.addAttachment({ url: "https://example.com/f.pdf", type: "file", name: "f.pdf" });
+    const preview = engine.getPreview();
+    expect(preview!.screenshotUrl).toBe("https://example.com/s.png");
+    expect(preview!.attachmentUrls).toHaveLength(1);
+    expect(preview!.attachmentUrls?.[0].name).toBe("f.pdf");
+  });
+
   it("markSubmitted() sets phase to submitted", async () => {
     await engine.start("feedback");
     const feedbackMode = BUILT_IN_MODES.find((m) => m.id === "feedback")!;

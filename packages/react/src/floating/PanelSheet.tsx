@@ -1,7 +1,13 @@
 import React, { useEffect, useRef } from "react";
 import { usePanelContext } from "../PanelProvider";
 import { PanelChat } from "../chat/PanelChat";
-import type { ModeId } from "@consiliency/panel-types";
+import type { ModeId, SubmissionPayload } from "@consiliency/panel-types";
+
+interface PanelSheetProps {
+  componentHint?: string;
+  submissionEnhancer?: (payload: SubmissionPayload) => SubmissionPayload;
+  renderInputBarExtras?: () => React.ReactNode;
+}
 
 const MODE_LABELS: Record<string, string> = {
   feedback: "Feedback",
@@ -11,7 +17,7 @@ const MODE_LABELS: Record<string, string> = {
 };
 
 /** Floating panel sheet containing mode tabs + chat */
-export function PanelSheet() {
+export function PanelSheet({ componentHint, submissionEnhancer, renderInputBarExtras }: PanelSheetProps = {}) {
   const { isOpen, setIsOpen, capabilities, activeModeId, setActiveModeId } = usePanelContext();
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +74,12 @@ export function PanelSheet() {
           );
         })}
       </div>
-      <PanelChat modeId={activeModeId} />
+      <PanelChat
+        modeId={activeModeId}
+        componentHint={componentHint}
+        submissionEnhancer={submissionEnhancer}
+        renderInputBarExtras={renderInputBarExtras}
+      />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type {
+  AttachmentRef,
   ConversationState,
   ConversationTurn,
   IssuePreview,
@@ -29,10 +30,10 @@ export class ConversationEngine {
     this.state = { ...this.state, screenshotUrl: url };
   }
 
-  addAttachmentUrl(url: string): void {
+  addAttachment(ref: AttachmentRef): void {
     this.state = {
       ...this.state,
-      attachmentUrls: [...(this.state.attachmentUrls ?? []), url],
+      attachmentUrls: [...(this.state.attachmentUrls ?? []), ref],
     };
   }
 

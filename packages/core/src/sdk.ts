@@ -3,6 +3,7 @@ import { PanelApiClient } from "./client";
 import { ConversationEngine } from "./conversation";
 import { MetadataCollector } from "./metadata";
 import { ModeRegistry } from "./modes";
+import { NavigationTracker } from "./navigation";
 import { VoiceInput } from "./voice";
 
 export class PanelSDK {
@@ -12,6 +13,7 @@ export class PanelSDK {
   readonly modes: ModeRegistry;
   readonly voice: VoiceInput;
   readonly conversation: ConversationEngine;
+  readonly navigation: NavigationTracker;
 
   private capabilities: CapabilitiesResponse | null = null;
 
@@ -26,6 +28,7 @@ export class PanelSDK {
     this.modes = new ModeRegistry();
     this.voice = new VoiceInput();
     this.conversation = new ConversationEngine(this.modes);
+    this.navigation = new NavigationTracker(config.navigationTracking === true);
   }
 
   async init(): Promise<void> {
@@ -43,5 +46,6 @@ export class PanelSDK {
   destroy(): void {
     this.metadata.destroy();
     this.voice.abort();
+    this.navigation.destroy();
   }
 }

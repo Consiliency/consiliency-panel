@@ -34,7 +34,7 @@ export function PanelProvider({ config, children }: PanelProviderProps) {
     sdkRef.current = s;
     return s;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.apiUrl, config.apiKey, config.repo]);
+  }, [config.apiUrl, config.apiKey, config.repo, config.panelRepo, config.githubLogin]);
 
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
   const [activeModeId, setActiveModeId] = useState<ModeId>("feedback");

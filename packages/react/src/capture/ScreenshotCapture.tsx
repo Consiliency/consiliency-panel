@@ -32,6 +32,7 @@ export function ScreenshotCapture({ onCaptured }: ScreenshotCaptureProps) {
     try {
       const url = await sdk.client.uploadAttachment(blob, "screenshot.png");
       sdk.conversation.setScreenshotUrl(url);
+      sdk.conversation.addAttachment({ url, type: "screenshot", name: "screenshot.png" });
       // Create object URL just for thumbnail display
       setThumbnail(URL.createObjectURL(blob));
       onCaptured(url);

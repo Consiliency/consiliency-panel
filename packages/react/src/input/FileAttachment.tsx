@@ -37,7 +37,7 @@ export function FileAttachment({ onUploaded }: FileAttachmentProps) {
       }
 
       const url = await sdk.client.uploadAttachment(blob, file.name);
-      sdk.conversation.addAttachmentUrl(url);
+      sdk.conversation.addAttachment({ url, type: "file", name: file.name });
       onUploaded(url, file.name);
     } catch {
       // Upload failed — silently ignore for now

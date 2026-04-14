@@ -2,17 +2,22 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePanelContext } from "../PanelProvider";
 import { PreviewCard } from "./PreviewCard";
 import { SubmitButton } from "./SubmitButton";
-import type { ConversationTurn, IssuePreview, ModeId } from "@consiliency/panel-types";
+import { ScreenshotCapture } from "../capture/ScreenshotCapture";
+import { FileAttachment } from "../input/FileAttachment";
+import type { ConversationTurn, IssuePreview, ModeId, SubmissionPayload } from "@consiliency/panel-types";
 
 interface PanelChatProps {
   modeId: ModeId;
+  componentHint?: string;
+  submissionEnhancer?: (payload: SubmissionPayload) => SubmissionPayload;
+  renderInputBarExtras?: () => React.ReactNode;
 }
 
 interface CompletedState {
   issueUrl: string;
 }
 
-export function PanelChat({ modeId }: PanelChatProps) {
+export function PanelChat({ modeId, componentHint, submissionEnhancer, renderInputBarExtras }: PanelChatProps) {
   const { sdk } = usePanelContext();
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
   const [preview, setPreview] = useState<IssuePreview | null>(null);
@@ -140,7 +145,12 @@ export function PanelChat({ modeId }: PanelChatProps) {
         {preview && (
           <>
             <PreviewCard preview={preview} />
-            <SubmitButton modeId={modeId} onDone={handleDone} />
+            <SubmitButton
+              modeId={modeId}
+              onDone={handleDone}
+              componentHint={componentHint}
+              submissionEnhancer={submissionEnhancer}
+            />
           </>
         )}
 
@@ -155,6 +165,9 @@ export function PanelChat({ modeId }: PanelChatProps) {
 
       {!inPreview && (
         <div className="panel-input-bar">
+          <ScreenshotCapture onCaptured={() => {}} />
+          <FileAttachment onUploaded={() => {}} />
+          {renderInputBarExtras?.()}
           <textarea
             ref={inputRef}
             className="panel-input"

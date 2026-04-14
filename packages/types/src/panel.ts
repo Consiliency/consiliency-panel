@@ -85,14 +85,14 @@ export interface ConversationState {
   phase: ConversationPhase;
   questionIndex: number;
   screenshotUrl?: string;
-  attachmentUrls?: string[];
+  attachmentUrls?: AttachmentRef[];
 }
 
 export interface IssuePreview {
   plainSummary: string;
   technicalDetails: string;
   screenshotUrl?: string;
-  attachmentUrls?: string[];
+  attachmentUrls?: AttachmentRef[];
 }
 
 export interface NavigationEntry {
