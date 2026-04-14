@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueInput,  IssueLabel,  IssueOutput,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  SubmissionMetadata } from "./types"
+import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueInput,  IssueLabel,  IssueOutput,  NavigationEntry,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  SubmissionMetadata } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -36,6 +36,11 @@ export interface StreamState<T> {
 }
 
 export namespace partial_types {
+    export interface AttachmentRef {
+      url?: string | null
+      type?: string | null
+      name?: string | null
+    }
     export interface ConversationTurn {
       role?: string | null
       content?: string | null
@@ -59,6 +64,10 @@ export namespace partial_types {
       metadata?: SubmissionMetadata | null
       repo_context?: RepoContext | null
       tier?: string | null
+      console_errors?: string[] | null
+      navigation_breadcrumb?: NavigationEntry[] | null
+      component_hint?: string | null
+      attachment_urls?: AttachmentRef[] | null
     }
     export interface IssueLabel {
       name?: string | null
@@ -73,6 +82,11 @@ export namespace partial_types {
       assignee?: string | null
       priority?: string | null
       fix_suggestion?: FixSuggestion | null
+    }
+    export interface NavigationEntry {
+      url?: string | null
+      title?: string | null
+      timestamp?: string | null
     }
     export interface RepoContext {
       labels?: RepoLabel[] | null

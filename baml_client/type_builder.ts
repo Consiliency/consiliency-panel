@@ -27,17 +27,21 @@ export { FieldType, EnumBuilder, ClassBuilder }
 export default class TypeBuilder {
     private tb: _TypeBuilder;
     
+    AttachmentRef: ClassViewer<'AttachmentRef', "url" | "type" | "name">;
+    
     ConversationTurn: ClassViewer<'ConversationTurn', "role" | "content" | "timestamp">;
     
     FixSuggestion: ClassViewer<'FixSuggestion', "relevant_functions" | "root_cause" | "suggested_approach" | "code_hint" | "confidence">;
     
     IssueClassification: ClassViewer<'IssueClassification', "category" | "severity" | "labels" | "requires_reproduction">;
     
-    IssueInput: ClassViewer<'IssueInput', "transcript" | "metadata" | "repo_context" | "tier">;
+    IssueInput: ClassViewer<'IssueInput', "transcript" | "metadata" | "repo_context" | "tier" | "console_errors" | "navigation_breadcrumb" | "component_hint" | "attachment_urls">;
     
     IssueLabel: ClassViewer<'IssueLabel', "name" | "reason">;
     
     IssueOutput: ClassViewer<'IssueOutput', "plain_summary" | "technical_details" | "github_title" | "github_body" | "labels" | "assignee" | "priority" | "fix_suggestion">;
+    
+    NavigationEntry: ClassViewer<'NavigationEntry', "url" | "title" | "timestamp">;
     
     RepoContext: ClassViewer<'RepoContext', "labels" | "recentIssues" | "relevantFiles" | "file_contents">;
     
@@ -54,13 +58,17 @@ export default class TypeBuilder {
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "ConversationTurn","FixSuggestion","IssueClassification","IssueInput","IssueLabel","IssueOutput","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","SubmissionMetadata",
+            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueInput","IssueLabel","IssueOutput","NavigationEntry","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","SubmissionMetadata",
           ]),
           enums: new Set([
             
           ]),
           runtime: DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME
         });
+        
+        this.AttachmentRef = this.tb.classViewer("AttachmentRef", [
+          "url","type","name",
+        ]);
         
         this.ConversationTurn = this.tb.classViewer("ConversationTurn", [
           "role","content","timestamp",
@@ -75,7 +83,7 @@ export default class TypeBuilder {
         ]);
         
         this.IssueInput = this.tb.classViewer("IssueInput", [
-          "transcript","metadata","repo_context","tier",
+          "transcript","metadata","repo_context","tier","console_errors","navigation_breadcrumb","component_hint","attachment_urls",
         ]);
         
         this.IssueLabel = this.tb.classViewer("IssueLabel", [
@@ -84,6 +92,10 @@ export default class TypeBuilder {
         
         this.IssueOutput = this.tb.classViewer("IssueOutput", [
           "plain_summary","technical_details","github_title","github_body","labels","assignee","priority","fix_suggestion",
+        ]);
+        
+        this.NavigationEntry = this.tb.classViewer("NavigationEntry", [
+          "url","title","timestamp",
         ]);
         
         this.RepoContext = this.tb.classViewer("RepoContext", [

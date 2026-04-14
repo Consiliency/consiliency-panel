@@ -24,7 +24,7 @@ import { toBamlError, BamlStream, BamlAbortError, Collector, ClientRegistry } fr
 import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types"
 import type { partial_types } from "./partial_types"
 import type * as types from "./types"
-import type {ConversationTurn, FixSuggestion, IssueClassification, IssueInput, IssueLabel, IssueOutput, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, SubmissionMetadata} from "./types"
+import type {AttachmentRef, ConversationTurn, FixSuggestion, IssueClassification, IssueInput, IssueLabel, IssueOutput, NavigationEntry, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, SubmissionMetadata} from "./types"
 import type TypeBuilder from "./type_builder"
 import { AsyncHttpRequest, AsyncHttpStreamRequest } from "./async_request"
 import { LlmResponseParser, LlmStreamParser } from "./parser"

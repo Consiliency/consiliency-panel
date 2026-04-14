@@ -47,6 +47,13 @@ export function all_succeeded<CheckName extends string>(checks: Record<CheckName
 export function get_checks<CheckName extends string>(checks: Record<CheckName, Check>): Check[] {
     return Object.values(checks)
 }
+export interface AttachmentRef {
+  url: string
+  type: string
+  name: string
+  
+}
+
 export interface ConversationTurn {
   role: string
   content: string
@@ -76,6 +83,10 @@ export interface IssueInput {
   metadata: SubmissionMetadata
   repo_context?: RepoContext | null
   tier: string
+  console_errors?: string[] | null
+  navigation_breadcrumb?: NavigationEntry[] | null
+  component_hint?: string | null
+  attachment_urls?: AttachmentRef[] | null
   
 }
 
@@ -94,6 +105,13 @@ export interface IssueOutput {
   assignee?: string | null
   priority: string
   fix_suggestion?: FixSuggestion | null
+  
+}
+
+export interface NavigationEntry {
+  url: string
+  title: string
+  timestamp: string
   
 }
 
