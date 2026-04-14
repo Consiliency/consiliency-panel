@@ -33,6 +33,7 @@ export async function POST(req: Request): Promise<Response> {
       transcript: body.transcript,
       metadata: body.metadata,
       console_errors: body.consoleErrors ?? null,
+      console_warnings: (body as any).consoleWarnings ?? null,
       screenshot_url: body.screenshotUrl ?? null,
       status: "pending",
       navigation_breadcrumb: (body as any).navigationBreadcrumb ?? null,
