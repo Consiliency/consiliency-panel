@@ -54,6 +54,15 @@ export interface ConversationTurn {
   
 }
 
+export interface FixSuggestion {
+  relevant_functions: string[]
+  root_cause: string
+  suggested_approach: string
+  code_hint?: string | null
+  confidence: string
+  
+}
+
 export interface IssueClassification {
   category: string
   severity: string
@@ -84,6 +93,7 @@ export interface IssueOutput {
   labels: string[]
   assignee?: string | null
   priority: string
+  fix_suggestion?: FixSuggestion | null
   
 }
 
@@ -91,6 +101,7 @@ export interface RepoContext {
   labels?: RepoLabel[] | null
   recentIssues?: RepoIssue[] | null
   relevantFiles?: string[] | null
+  file_contents?: Record<string, string> | null
   
 }
 

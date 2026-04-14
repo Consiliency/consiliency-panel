@@ -23,6 +23,7 @@ class RepoContext {
   labels RepoLabel[]?
   recentIssues RepoIssue[]?
   relevantFiles string[]?
+  file_contents map<string, string>? @description("Filename → truncated file content, team tier only")
 }
 
 class RepoLabel {
@@ -57,6 +58,14 @@ class RepoEnrichment {
   reproduction_steps string[]
 }
 
+class FixSuggestion {
+  relevant_functions string[] @description("Specific function or method names to inspect")
+  root_cause string           @description("Hypothesis about why this is failing or what is missing")
+  suggested_approach string   @description("Plain-English description of how to fix it")
+  code_hint string?           @description("Optional short code snippet (< 20 lines) illustrating the fix")
+  confidence string           @description("One of: high, medium, low")
+}
+
 class IssueOutput {
   plain_summary string @description("2-3 sentences, non-technical, suitable for any user")
   technical_details string @description("Markdown with full technical context, console errors, environment info")
@@ -65,4 +74,5 @@ class IssueOutput {
   labels string[]
   assignee string?
   priority string @description("One of: critical, high, normal, low")
+  fix_suggestion FixSuggestion? @description("Present only for team tier when file contents were available")
 }

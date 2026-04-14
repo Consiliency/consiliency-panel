@@ -99,7 +99,7 @@ export async function POST(
               : String(rawMeta.viewport),
         };
 
-        const issueInput = {
+        let issueInput = {
           transcript: sanitizeTranscript(sub.transcript as ConversationTurn[]),
           metadata: bamlMetadata,
           repo_context: repoContext,
@@ -111,8 +111,42 @@ export async function POST(
         send({ type: "progress", message: "Enriching with context…" });
         const enrichment = await b.EnrichWithRepoContext(issueInput, classification);
 
+        // For team tier: fetch relevant file contents and run fix analysis
+        let fixSuggestion: { relevant_functions: string[]; root_cause: string; suggested_approach: string; code_hint?: string; confidence: string } | null = null;
+
+        if (sub.tier === "team" && enrichment.relevant_files.length > 0) {
+          send({ type: "progress", message: "Analysing source files…" });
+
+          const FILE_LIMIT = 5;
+          const CONTENT_LIMIT = 8000;
+          const filesToFetch = enrichment.relevant_files.slice(0, FILE_LIMIT);
+          const fileContents: Record<string, string> = {};
+
+          await Promise.allSettled(
+            filesToFetch.map(async (filePath) => {
+              try {
+                const { data } = await octokit.repos.getContent({ owner, repo, path: filePath });
+                if ("content" in data && typeof data.content === "string") {
+                  const decoded = Buffer.from(data.content, "base64").toString("utf8");
+                  fileContents[filePath] = decoded.slice(0, CONTENT_LIMIT);
+                }
+              } catch {
+                // file not found or not a file — skip silently
+              }
+            })
+          );
+
+          if (Object.keys(fileContents).length > 0) {
+            issueInput = {
+              ...issueInput,
+              repo_context: { ...repoContext, file_contents: fileContents },
+            };
+            fixSuggestion = await b.SuggestFix(issueInput, classification, enrichment);
+          }
+        }
+
         send({ type: "progress", message: "Formatting issue…" });
-        const issueOutput = await b.FormatAsGitHubIssue(issueInput, classification, enrichment) as {
+        const issueOutput = await b.FormatAsGitHubIssue(issueInput, classification, enrichment, fixSuggestion) as {
           github_title: string;
           github_body: string;
           labels: string[];

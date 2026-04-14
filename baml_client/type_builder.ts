@@ -29,15 +29,17 @@ export default class TypeBuilder {
     
     ConversationTurn: ClassViewer<'ConversationTurn', "role" | "content" | "timestamp">;
     
+    FixSuggestion: ClassViewer<'FixSuggestion', "relevant_functions" | "root_cause" | "suggested_approach" | "code_hint" | "confidence">;
+    
     IssueClassification: ClassViewer<'IssueClassification', "category" | "severity" | "labels" | "requires_reproduction">;
     
     IssueInput: ClassViewer<'IssueInput', "transcript" | "metadata" | "repo_context" | "tier">;
     
     IssueLabel: ClassViewer<'IssueLabel', "name" | "reason">;
     
-    IssueOutput: ClassViewer<'IssueOutput', "plain_summary" | "technical_details" | "github_title" | "github_body" | "labels" | "assignee" | "priority">;
+    IssueOutput: ClassViewer<'IssueOutput', "plain_summary" | "technical_details" | "github_title" | "github_body" | "labels" | "assignee" | "priority" | "fix_suggestion">;
     
-    RepoContext: ClassViewer<'RepoContext', "labels" | "recentIssues" | "relevantFiles">;
+    RepoContext: ClassViewer<'RepoContext', "labels" | "recentIssues" | "relevantFiles" | "file_contents">;
     
     RepoEnrichment: ClassViewer<'RepoEnrichment', "relevant_files" | "related_issues" | "suggested_assignee" | "reproduction_steps">;
     
@@ -52,7 +54,7 @@ export default class TypeBuilder {
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "ConversationTurn","IssueClassification","IssueInput","IssueLabel","IssueOutput","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","SubmissionMetadata",
+            "ConversationTurn","FixSuggestion","IssueClassification","IssueInput","IssueLabel","IssueOutput","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","SubmissionMetadata",
           ]),
           enums: new Set([
             
@@ -62,6 +64,10 @@ export default class TypeBuilder {
         
         this.ConversationTurn = this.tb.classViewer("ConversationTurn", [
           "role","content","timestamp",
+        ]);
+        
+        this.FixSuggestion = this.tb.classViewer("FixSuggestion", [
+          "relevant_functions","root_cause","suggested_approach","code_hint","confidence",
         ]);
         
         this.IssueClassification = this.tb.classViewer("IssueClassification", [
@@ -77,11 +83,11 @@ export default class TypeBuilder {
         ]);
         
         this.IssueOutput = this.tb.classViewer("IssueOutput", [
-          "plain_summary","technical_details","github_title","github_body","labels","assignee","priority",
+          "plain_summary","technical_details","github_title","github_body","labels","assignee","priority","fix_suggestion",
         ]);
         
         this.RepoContext = this.tb.classViewer("RepoContext", [
-          "labels","recentIssues","relevantFiles",
+          "labels","recentIssues","relevantFiles","file_contents",
         ]);
         
         this.RepoEnrichment = this.tb.classViewer("RepoEnrichment", [

@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  ConversationTurn,  IssueClassification,  IssueInput,  IssueLabel,  IssueOutput,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  SubmissionMetadata } from "./types"
+import type {  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueInput,  IssueLabel,  IssueOutput,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  SubmissionMetadata } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -40,6 +40,13 @@ export namespace partial_types {
       role?: string | null
       content?: string | null
       timestamp?: string | null
+    }
+    export interface FixSuggestion {
+      relevant_functions: string[]
+      root_cause?: string | null
+      suggested_approach?: string | null
+      code_hint?: string | null
+      confidence?: string | null
     }
     export interface IssueClassification {
       category?: string | null
@@ -65,11 +72,13 @@ export namespace partial_types {
       labels: string[]
       assignee?: string | null
       priority?: string | null
+      fix_suggestion?: FixSuggestion | null
     }
     export interface RepoContext {
       labels?: RepoLabel[] | null
       recentIssues?: RepoIssue[] | null
       relevantFiles?: string[] | null
+      file_contents?: Record<string, string> | null
     }
     export interface RepoEnrichment {
       relevant_files: string[]

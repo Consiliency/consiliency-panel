@@ -1,4 +1,9 @@
-function FormatAsGitHubIssue(input: IssueInput, classification: IssueClassification, enrichment: RepoEnrichment) -> IssueOutput {
+function FormatAsGitHubIssue(
+  input: IssueInput,
+  classification: IssueClassification,
+  enrichment: RepoEnrichment,
+  fix_suggestion: FixSuggestion?
+) -> IssueOutput {
   client KimiK2
   prompt #"
     You are a technical writer creating a well-structured GitHub issue from a user conversation.
@@ -28,6 +33,22 @@ function FormatAsGitHubIssue(input: IssueInput, classification: IssueClassificat
     - Related issues: {{ enrichment.related_issues | join(", ") }}
     {% endif %}
 
+    {% if fix_suggestion %}
+    Fix suggestion (from code analysis):
+    - Root cause: {{ fix_suggestion.root_cause }}
+    - Approach: {{ fix_suggestion.suggested_approach }}
+    {% if fix_suggestion.relevant_functions %}
+    - Functions involved: {{ fix_suggestion.relevant_functions | join(", ") }}
+    {% endif %}
+    {% if fix_suggestion.code_hint %}
+    - Code hint:
+    ```
+    {{ fix_suggestion.code_hint }}
+    ```
+    {% endif %}
+    - Confidence: {{ fix_suggestion.confidence }}
+    {% endif %}
+
     Create:
     1. plain_summary: 2-3 non-technical sentences suitable for any user. No jargon.
     2. technical_details: Markdown with environment, console context, and file references.
@@ -39,9 +60,15 @@ function FormatAsGitHubIssue(input: IssueInput, classification: IssueClassificat
        ## Actual Behavior (if applicable)
        ## Environment
        ## Additional Context
+       {% if fix_suggestion %}
+       ## Suggested Fix
+       Include the root cause hypothesis, suggested approach, relevant function names,
+       and code hint (if any). End with "_Confidence: {{ fix_suggestion.confidence }}_".
+       {% endif %}
     5. labels: Array of label names to apply.
     6. assignee: GitHub login or null.
     7. priority: critical, high, normal, or low.
+    8. fix_suggestion: Pass through the fix_suggestion object as-is if provided, otherwise null.
 
     {{ ctx.output_format }}
   "#
