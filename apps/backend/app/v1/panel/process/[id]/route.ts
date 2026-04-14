@@ -1,9 +1,10 @@
+import { validateApiKey, unauthorized } from "@/lib/auth";
 import { getServiceSupabase } from "@/lib/supabase";
 import { getGitHubClient, parseRepo } from "@/lib/github";
+import { corsPreflight, withCors } from "@/lib/cors";
 import type { ConversationTurn, PanelSubmission, SubmissionMetadata } from "@consiliency/panel-types";
 
-// Internal-only route — called by after() in submit/route.ts
-// Protected by PANEL_INTERNAL_SECRET, not the public API key
+export async function OPTIONS(req: Request) { return corsPreflight(req); }
 
 const MAX_TURN_CONTENT_LENGTH = 4000;
 
@@ -21,13 +22,6 @@ function sanitizeTranscript(turns: ConversationTurn[]): ConversationTurn[] {
   }));
 }
 
-function validateInternalSecret(req: Request): boolean {
-  const auth = req.headers.get("authorization");
-  const secret = process.env.PANEL_INTERNAL_SECRET;
-  if (!secret) return false;
-  return auth === `Bearer ${secret}`;
-}
-
 function sseEvent(data: object): string {
   return `data: ${JSON.stringify(data)}\n\n`;
 }
@@ -36,9 +30,8 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> {
-  if (!validateInternalSecret(req)) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const key = await validateApiKey(req);
+  if (!key) return withCors(unauthorized(), req);
 
   const { id } = await params;
   const body = (await req.json()) as { repo: string };
@@ -156,10 +149,12 @@ export async function POST(
           .eq("id", id);
 
         send({
-          type: "complete",
+          type: "completed",
           message: "Issue created successfully",
           issueUrl: createdIssue.html_url,
           issueNumber: createdIssue.number,
+          title: issueOutput.github_title,
+          plainSummary: issueOutput.plain_summary,
         });
       } catch (err) {
         console.error("Process pipeline error:", err);
@@ -174,11 +169,11 @@ export async function POST(
     },
   });
 
-  return new Response(stream, {
+  return withCors(new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
     },
-  });
+  }), req);
 }

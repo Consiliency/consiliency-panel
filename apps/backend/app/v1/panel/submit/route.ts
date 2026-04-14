@@ -3,6 +3,9 @@ import { isRateLimited, tooManyRequests } from "@/lib/ratelimit";
 import { getServiceSupabase } from "@/lib/supabase";
 import type { SubmissionPayload } from "@consiliency/panel-types";
 import { after } from "next/server";
+import { corsPreflight, withCors } from "@/lib/cors";
+
+export async function OPTIONS(req: Request) { return corsPreflight(req); }
 
 export async function POST(req: Request): Promise<Response> {
   const key = await validateApiKey(req);
@@ -61,5 +64,5 @@ export async function POST(req: Request): Promise<Response> {
     }
   });
 
-  return Response.json({ id: submissionId }, { status: 202 });
+  return withCors(Response.json({ id: submissionId }, { status: 202 }), req);
 }
