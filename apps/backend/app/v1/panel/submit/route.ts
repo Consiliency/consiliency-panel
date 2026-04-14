@@ -35,6 +35,9 @@ export async function POST(req: Request): Promise<Response> {
       console_errors: body.consoleErrors ?? null,
       screenshot_url: body.screenshotUrl ?? null,
       status: "pending",
+      navigation_breadcrumb: (body as any).navigationBreadcrumb ?? null,
+      component_hint: (body as any).componentHint ?? null,
+      attachment_urls: (body as any).attachmentUrls ?? null,
     })
     .select("id")
     .single();

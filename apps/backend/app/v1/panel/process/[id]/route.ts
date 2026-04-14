@@ -66,6 +66,10 @@ export async function POST(
         }
 
         const sub = submission as PanelSubmission;
+        const navigationBreadcrumb = (sub as any).navigation_breadcrumb as Array<{url: string; title: string; ts: string}> | null;
+        const componentHint = (sub as any).component_hint as string | null;
+        const attachmentUrls = (sub as any).attachment_urls as Array<{url: string; type: string; name: string}> | null;
+        const consoleErrors = (sub as any).console_errors as string[] | null;
 
         // Fetch repo context for enrichment
         send({ type: "progress", message: "Gathering repository context…" });
@@ -104,6 +108,10 @@ export async function POST(
           metadata: bamlMetadata,
           repo_context: repoContext,
           tier: sub.tier,
+          console_errors: consoleErrors ?? undefined,
+          navigation_breadcrumb: navigationBreadcrumb ?? undefined,
+          component_hint: componentHint ?? undefined,
+          attachment_urls: attachmentUrls ?? undefined,
         };
 
         const classification = await b.ClassifyIssue(issueInput);
@@ -112,7 +120,7 @@ export async function POST(
         const enrichment = await b.EnrichWithRepoContext(issueInput, classification);
 
         // For team tier: fetch relevant file contents and run fix analysis
-        let fixSuggestion: { relevant_functions: string[]; root_cause: string; suggested_approach: string; code_hint?: string; confidence: string } | null = null;
+        let fixSuggestion: { relevant_functions: string[]; root_cause: string; suggested_approach: string; code_hint?: string | null; confidence: string } | null = null;
 
         if (sub.tier === "team" && enrichment.relevant_files.length > 0) {
           send({ type: "progress", message: "Analysing source files…" });
@@ -139,7 +147,8 @@ export async function POST(
           if (Object.keys(fileContents).length > 0) {
             issueInput = {
               ...issueInput,
-              repo_context: { ...repoContext, file_contents: fileContents },
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              repo_context: { ...repoContext, file_contents: fileContents } as any,
             };
             fixSuggestion = await b.SuggestFix(issueInput, classification, enrichment);
           }

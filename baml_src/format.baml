@@ -33,6 +33,31 @@ function FormatAsGitHubIssue(
     - Related issues: {{ enrichment.related_issues | join(", ") }}
     {% endif %}
 
+    {% if input.navigation_breadcrumb %}
+    Navigation path:
+    {% for entry in input.navigation_breadcrumb %}
+    - {{ entry.title }} ({{ entry.url }}) at {{ entry.timestamp }}
+    {% endfor %}
+    {% endif %}
+
+    {% if input.component_hint %}
+    Likely source file: {{ input.component_hint }}
+    {% endif %}
+
+    {% if input.console_errors %}
+    Console errors captured:
+    {% for err in input.console_errors %}
+    - {{ err }}
+    {% endfor %}
+    {% endif %}
+
+    {% if input.attachment_urls %}
+    Attachments:
+    {% for att in input.attachment_urls %}
+    - {{ att.name }}: {{ att.url }}
+    {% endfor %}
+    {% endif %}
+
     {% if fix_suggestion %}
     Fix suggestion (from code analysis):
     - Root cause: {{ fix_suggestion.root_cause }}
@@ -60,6 +85,14 @@ function FormatAsGitHubIssue(
        ## Actual Behavior (if applicable)
        ## Environment
        ## Additional Context
+       ## Navigation Path (if navigation_breadcrumb provided)
+       Table with page title, URL, and timestamp columns.
+       ## Component Hint (if component_hint provided)
+       Show as: `Likely source file: \`path\``
+       ## Console Errors (if console_errors provided)
+       Code block with the error list.
+       ## Attachments (if attachment_urls provided)
+       Bulleted list with markdown image links for screenshots.
        {% if fix_suggestion %}
        ## Suggested Fix
        Include the root cause hypothesis, suggested approach, relevant function names,

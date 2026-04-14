@@ -12,11 +12,27 @@ class SubmissionMetadata {
   timestamp string
 }
 
+class NavigationEntry {
+  url string
+  title string
+  timestamp string
+}
+
+class AttachmentRef {
+  url string
+  type string  @description("screenshot or file")
+  name string
+}
+
 class IssueInput {
   transcript ConversationTurn[]
   metadata SubmissionMetadata
   repo_context RepoContext?
   tier string
+  console_errors string[]?
+  navigation_breadcrumb NavigationEntry[]?
+  component_hint string?
+  attachment_urls AttachmentRef[]?
 }
 
 class RepoContext {

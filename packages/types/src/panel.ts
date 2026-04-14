@@ -32,6 +32,9 @@ export interface PanelConfig {
   githubLogin?: string;
   /** Optional theme overrides */
   theme?: PanelTheme;
+  metadataCollectors?: CustomMetadataCollector[];
+  consoleCapture?: boolean;
+  navigationTracking?: boolean;
 }
 
 export interface PanelTheme {
@@ -86,6 +89,24 @@ export interface IssuePreview {
   attachmentUrls?: string[];
 }
 
+export interface NavigationEntry {
+  url: string;
+  title: string;
+  ts: string;
+}
+
+export interface AttachmentRef {
+  url: string;
+  type: "screenshot" | "file";
+  name: string;
+}
+
+export interface CustomMetadataCollector {
+  key: string;
+  label: string;
+  collect: () => unknown;
+}
+
 export interface SubmissionPayload {
   productKey?: string; // derived server-side from the API key; optional on client
   githubLogin?: string;
@@ -94,7 +115,9 @@ export interface SubmissionPayload {
   metadata: SubmissionMetadata;
   consoleErrors?: string[];
   screenshotUrl?: string;
-  attachmentUrls?: string[];
+  attachmentUrls?: AttachmentRef[];
+  navigationBreadcrumb?: NavigationEntry[];
+  componentHint?: string;
 }
 
 export interface ProcessEvent {
