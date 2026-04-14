@@ -51,6 +51,8 @@ export default class TypeBuilder {
     
     RepoLabel: ClassViewer<'RepoLabel', "name" | "description" | "color">;
     
+    RoutingDecision: ClassViewer<'RoutingDecision', "target" | "reasoning" | "confidence">;
+    
     SubmissionMetadata: ClassViewer<'SubmissionMetadata', "url" | "title" | "userAgent" | "viewport" | "timestamp">;
     
     
@@ -58,7 +60,7 @@ export default class TypeBuilder {
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueInput","IssueLabel","IssueOutput","NavigationEntry","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","SubmissionMetadata",
+            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueInput","IssueLabel","IssueOutput","NavigationEntry","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","RoutingDecision","SubmissionMetadata",
           ]),
           enums: new Set([
             
@@ -112,6 +114,10 @@ export default class TypeBuilder {
         
         this.RepoLabel = this.tb.classViewer("RepoLabel", [
           "name","description","color",
+        ]);
+        
+        this.RoutingDecision = this.tb.classViewer("RoutingDecision", [
+          "target","reasoning","confidence",
         ]);
         
         this.SubmissionMetadata = this.tb.classViewer("SubmissionMetadata", [

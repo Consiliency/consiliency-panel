@@ -146,6 +146,13 @@ export interface RepoLabel {
   
 }
 
+export interface RoutingDecision {
+  target: string
+  reasoning: string
+  confidence: string
+  
+}
+
 export interface SubmissionMetadata {
   url: string
   title: string

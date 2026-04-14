@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueInput,  IssueLabel,  IssueOutput,  NavigationEntry,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  SubmissionMetadata } from "./types"
+import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueInput,  IssueLabel,  IssueOutput,  NavigationEntry,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  RoutingDecision,  SubmissionMetadata } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -110,6 +110,11 @@ export namespace partial_types {
       name?: string | null
       description?: string | null
       color?: string | null
+    }
+    export interface RoutingDecision {
+      target?: string | null
+      reasoning?: string | null
+      confidence?: string | null
     }
     export interface SubmissionMetadata {
       url?: string | null
