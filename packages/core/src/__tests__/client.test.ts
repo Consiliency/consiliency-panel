@@ -78,24 +78,62 @@ describe("PanelApiClient", () => {
   });
 
   describe("streamProcess()", () => {
-    it("emits events from SSE stream and resolves on complete", async () => {
-      const sseBody = [
-        `data: ${JSON.stringify({ type: "progress", message: "Classifying…" })}`,
-        `data: ${JSON.stringify({ type: "complete", message: "Done", issueUrl: "https://github.com/issues/1", issueNumber: 1 })}`,
-        "",
-      ].join("\n\n");
+    function makeSseResponse(events: object[]): Response {
+      const body = events
+        .map((e) => `data: ${JSON.stringify(e)}`)
+        .join("\n\n") + "\n\n";
+      return new Response(body, {
+        status: 200,
+        headers: { "content-type": "text/event-stream" },
+      });
+    }
 
-      fetchSpy.mockResolvedValueOnce(
-        new Response(sseBody, {
-          status: 200,
-          headers: { "content-type": "text/event-stream" },
-        })
-      );
+    it("emits events from SSE stream using 'completed' event type", async () => {
+      fetchSpy.mockResolvedValueOnce(makeSseResponse([
+        { type: "progress", message: "Classifying…" },
+        { type: "completed", issueUrl: "https://github.com/issues/1", issueNumber: 1 },
+      ]));
 
       const events: Array<{ type: string }> = [];
-      await client.streamProcess("sub-xyz", (e) => events.push(e));
+      await client.streamProcess("sub-xyz", (e) => events.push(e), { repo: "Owner/repo" });
 
-      expect(events.map((e) => e.type)).toEqual(["progress", "complete"]);
+      expect(events.map((e) => e.type)).toEqual(["progress", "completed"]);
+    });
+
+    it("sends repo and panelRepo in POST body", async () => {
+      fetchSpy.mockResolvedValueOnce(makeSseResponse([
+        { type: "completed", issueUrl: "https://github.com/issues/2", issueNumber: 2 },
+      ]));
+
+      await client.streamProcess(
+        "sub-xyz",
+        () => {},
+        { repo: "Owner/app-repo", panelRepo: "Owner/panel-repo" }
+      );
+
+      const [url, opts] = fetchSpy.mock.calls[0] as [string, RequestInit];
+      expect(url).toBe(`${API_URL}/v1/panel/process/sub-xyz`);
+      expect(opts?.method).toBe("POST");
+      const body = JSON.parse(opts?.body as string) as { repo: string; panelRepo?: string };
+      expect(body.repo).toBe("Owner/app-repo");
+      expect(body.panelRepo).toBe("Owner/panel-repo");
+    });
+
+    it("sends empty repo when options omitted (backwards compat)", async () => {
+      fetchSpy.mockResolvedValueOnce(makeSseResponse([
+        { type: "completed", issueUrl: "https://github.com/issues/3", issueNumber: 3 },
+      ]));
+
+      await client.streamProcess("sub-xyz", () => {});
+
+      const [, opts] = fetchSpy.mock.calls[0] as [string, RequestInit];
+      const body = JSON.parse(opts?.body as string) as { repo: string };
+      expect(body.repo).toBe("");
+    });
+
+    it("throws on non-ok response", async () => {
+      fetchSpy.mockResolvedValueOnce(new Response("{}", { status: 500 }));
+      await expect(client.streamProcess("sub-xyz", () => {})).rejects.toThrow("Process stream failed: 500");
     });
   });
 });
