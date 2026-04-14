@@ -50,7 +50,7 @@ export function get_checks<CheckName extends string>(checks: Record<CheckName, C
 export interface ConversationTurn {
   role: string
   content: string
-  timestamp: string
+  timestamp?: string | null
   
 }
 

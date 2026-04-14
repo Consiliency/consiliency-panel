@@ -1,7 +1,7 @@
 class ConversationTurn {
   role string
   content string
-  timestamp string
+  timestamp string?
 }
 
 class SubmissionMetadata {

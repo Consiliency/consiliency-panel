@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@boundaryml/baml':
+        specifier: 0.220.0
+        version: 0.220.0
       '@types/node':
         specifier: ^24.0.0
         version: 24.12.2
