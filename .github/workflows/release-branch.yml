@@ -1,0 +1,96 @@
+name: Release branch
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  release-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: "@consiliency"
+
+      - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Build dist artifact
+        run: pnpm --filter @consiliency/panel-react build:dist
+
+      - name: Assemble release payload
+        run: |
+          set -euo pipefail
+          SRC_COMMIT=$(git rev-parse HEAD)
+          rm -rf /tmp/release
+          mkdir -p /tmp/release
+          cp -r packages/react/dist /tmp/release/dist
+          cp README.md /tmp/release/README.md
+          if [ -f LICENSE ]; then cp LICENSE /tmp/release/LICENSE; fi
+
+          node -e '
+            const pkg = require("./packages/react/package.json");
+            const out = {
+              name: pkg.name,
+              version: pkg.version,
+              description: pkg.description,
+              main: "./dist/index.js",
+              module: "./dist/index.mjs",
+              types: "./dist/index.d.ts",
+              exports: {
+                ".": {
+                  types: "./dist/index.d.ts",
+                  import: "./dist/index.mjs",
+                  require: "./dist/index.js"
+                },
+                "./styles": "./dist/styles/panel.css"
+              },
+              files: ["dist"],
+              peerDependencies: pkg.peerDependencies,
+              dependencies: Object.fromEntries(
+                Object.entries(pkg.dependencies || {})
+                  .filter(([n]) => !n.startsWith("@consiliency/"))
+              ),
+              repository: {
+                type: "git",
+                url: "git+https://github.com/Consiliency/consiliency-panel.git"
+              }
+            };
+            require("fs").writeFileSync("/tmp/release/package.json", JSON.stringify(out, null, 2));
+          '
+
+          echo "Built from ${SRC_COMMIT}" > /tmp/release/RELEASE_SOURCE.txt
+
+      - name: Publish to release branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          SRC_COMMIT=$(git rev-parse HEAD)
+
+          cd /tmp/release
+          git init -b release
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git add -A
+          git commit -m "release: build artifact for ${SRC_COMMIT}"
+          git push --force origin release

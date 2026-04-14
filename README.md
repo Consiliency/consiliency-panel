@@ -12,11 +12,32 @@ An embeddable, mode-aware chat panel for any web app. Guides users through struc
 
 ## Install
 
+Two supported paths:
+
+### A. From the `release` branch (recommended for outside embedders)
+
+CI maintains a `release` branch that ships a prebuilt, self-contained artifact — no GitHub Packages token, no workspace resolution.
+
+```bash
+pnpm add "github:Consiliency/consiliency-panel#release"
+# or
+npm install "github:Consiliency/consiliency-panel#release"
+```
+
+Then:
+
+```tsx
+import { mountPanel } from "@consiliency/panel-react";
+import "@consiliency/panel-react/styles";
+```
+
+The package reads from `./dist` with `@consiliency/panel-core` and `@consiliency/panel-types` inlined.
+
+### B. From GitHub Packages (for org members / CI with a `read:packages` token)
+
 ```bash
 pnpm add @consiliency/panel-react
 ```
-
-Configure npm to pull `@consiliency` packages from GitHub Packages:
 
 ```
 # .npmrc

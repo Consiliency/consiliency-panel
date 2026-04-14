@@ -12,6 +12,7 @@
   "files": ["src"],
   "scripts": {
     "build": "tsc --noEmit",
+    "build:dist": "tsup",
     "test": "vitest run --passWithNoTests",
     "lint": "tsc --noEmit"
   },
