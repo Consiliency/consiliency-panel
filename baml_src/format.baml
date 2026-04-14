@@ -51,6 +51,13 @@ function FormatAsGitHubIssue(
     {% endfor %}
     {% endif %}
 
+    {% if input.console_warnings %}
+    Console warnings captured (first 30):
+    {% for w in input.console_warnings %}
+    - {{ w }}
+    {% endfor %}
+    {% endif %}
+
     {% if input.attachment_urls %}
     Attachments:
     {% for att in input.attachment_urls %}
@@ -91,6 +98,8 @@ function FormatAsGitHubIssue(
        Show as: `Likely source file: \`path\``
        ## Console Errors (if console_errors provided)
        Code block with the error list.
+       ## Console Warnings (if console_warnings provided)
+       Collapsible <details><summary>Console Warnings (N)</summary> block with a code block inside.
        ## Attachments (if attachment_urls provided)
        Bulleted list with markdown image links for screenshots.
        {% if fix_suggestion %}

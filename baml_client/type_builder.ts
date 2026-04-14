@@ -35,7 +35,7 @@ export default class TypeBuilder {
     
     IssueClassification: ClassViewer<'IssueClassification', "category" | "severity" | "labels" | "requires_reproduction">;
     
-    IssueInput: ClassViewer<'IssueInput', "transcript" | "metadata" | "repo_context" | "tier" | "console_errors" | "navigation_breadcrumb" | "component_hint" | "attachment_urls">;
+    IssueInput: ClassViewer<'IssueInput', "transcript" | "metadata" | "repo_context" | "tier" | "console_errors" | "console_warnings" | "navigation_breadcrumb" | "component_hint" | "attachment_urls">;
     
     IssueLabel: ClassViewer<'IssueLabel', "name" | "reason">;
     
@@ -85,7 +85,7 @@ export default class TypeBuilder {
         ]);
         
         this.IssueInput = this.tb.classViewer("IssueInput", [
-          "transcript","metadata","repo_context","tier","console_errors","navigation_breadcrumb","component_hint","attachment_urls",
+          "transcript","metadata","repo_context","tier","console_errors","console_warnings","navigation_breadcrumb","component_hint","attachment_urls",
         ]);
         
         this.IssueLabel = this.tb.classViewer("IssueLabel", [

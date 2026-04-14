@@ -30,6 +30,7 @@ class IssueInput {
   repo_context RepoContext?
   tier string
   console_errors string[]?
+  console_warnings string[]?
   navigation_breadcrumb NavigationEntry[]?
   component_hint string?
   attachment_urls AttachmentRef[]?

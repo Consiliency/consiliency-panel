@@ -84,6 +84,7 @@ export interface IssueInput {
   repo_context?: RepoContext | null
   tier: string
   console_errors?: string[] | null
+  console_warnings?: string[] | null
   navigation_breadcrumb?: NavigationEntry[] | null
   component_hint?: string | null
   attachment_urls?: AttachmentRef[] | null
