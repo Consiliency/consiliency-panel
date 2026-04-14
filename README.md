@@ -110,6 +110,53 @@ Model assignments (in `baml_src/clients.baml`):
 2. **Grant roles** — navigate to `/admin/roles` to assign `guest`, `contractor`, or `team` tier to GitHub logins.
 3. Set `NEXT_PUBLIC_PANEL_API_URL` and `NEXT_PUBLIC_PANEL_API_KEY` in your app's environment.
 
+## Repo Routing (`panelRepo`)
+
+When the panel is embedded in your own app, all feedback defaults to filing issues in `repo`. If you also want panel widget bugs to land in the panel's own repo automatically, set `panelRepo`:
+
+```tsx
+mountPanel({
+  apiUrl: "...",
+  apiKey: "...",
+  repo: "your-org/your-app",           // host app issues go here
+  panelRepo: "Consiliency/consiliency-panel",  // panel widget bugs go here
+});
+```
+
+At submit time a BAML `RouteToRepo` agent examines the conversation transcript, page URL, and which screenshots were retained to decide whether the report is about the host app or the panel widget. The routing decision is emitted as a `routing` SSE event before the issue is created.
+
+**Screenshot naming convention** — the router uses filename prefixes to infer screenshot kind:
+- `screenshot-page-<timestamp>.png` → page screenshot (host app issue signal)
+- `screenshot-panel-<timestamp>.png` → panel screenshot (panel widget issue signal)
+
+If you build a custom screenshot pipeline, use these prefixes so the router can use them as signals.
+
+## CORS Configuration (`PANEL_ALLOWED_ORIGINS`)
+
+The backend defaults to reflecting any origin (permissive, suitable for local dev and early deploys). For production, lock it down:
+
+```
+# backend .env
+PANEL_ALLOWED_ORIGINS=https://your-app.com,https://staging.your-app.com
+```
+
+If the origin is not in the allowlist, the backend returns no CORS headers and the browser blocks the request. The panel will silently fail to load. Check the browser Network tab for a CORS error if the panel button doesn't appear.
+
+## Diagnosing Init Failures
+
+If the panel button doesn't render, check the browser console for a `[Panel]` warning:
+
+```
+[Panel] SDK init failed: Capabilities fetch failed: 401.
+Check your apiUrl, apiKey, and PANEL_ALLOWED_ORIGINS backend config.
+```
+
+Common causes:
+- Wrong or missing `apiKey` → 401
+- `apiUrl` points at wrong environment → network error or 404
+- Origin not in `PANEL_ALLOWED_ORIGINS` → CORS error (preflight fails before auth)
+- API key expired or deactivated in the admin panel
+
 ## Backend Environment Variables
 
 | Variable | Required | Description |
@@ -122,5 +169,6 @@ Model assignments (in `baml_src/clients.baml`):
 | `GITHUB_TOKEN_CONTRACTOR` | Yes | Read-only token (+ file tree) |
 | `GITHUB_TOKEN_TEAM` | Yes | Read token (+ blame, PRs, CI) |
 | `NEXT_PUBLIC_PANEL_API_URL` | Yes | Public API URL |
+| `PANEL_ALLOWED_ORIGINS` | Optional | Comma-separated allowed origins (defaults to allow-all) |
 | `UPSTASH_REDIS_REST_URL` | Optional | Rate limiting (falls back to allow-all) |
 | `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limiting |

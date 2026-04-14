@@ -1,19 +1,22 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { MetadataCollector } from "../metadata";
 
 describe("MetadataCollector", () => {
   let collector: MetadataCollector;
   let originalConsoleError: typeof console.error;
+  let originalConsoleWarn: typeof console.warn;
 
   beforeEach(() => {
     originalConsoleError = console.error;
+    originalConsoleWarn = console.warn;
     collector = new MetadataCollector();
   });
 
   afterEach(() => {
     collector.destroy();
-    // Restore original in case destroy didn't (failsafe)
+    // Restore originals in case destroy didn't (failsafe)
     console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
   });
 
   it("collect() returns metadata with required fields", () => {
@@ -59,5 +62,32 @@ describe("MetadataCollector", () => {
     collector.destroy();
     expect(console.error).not.toBe(patched);
     collector = new MetadataCollector(); // Re-create for afterEach
+  });
+
+  it("collectConsoleWarnings() returns warnings captured since construction", () => {
+    console.warn("Test warning 1");
+    console.warn("Test warning 2");
+    const warnings = collector.collectConsoleWarnings();
+    expect(warnings.length).toBeGreaterThanOrEqual(2);
+    expect(warnings.some((w) => w.includes("Test warning 1"))).toBe(true);
+    expect(warnings.some((w) => w.includes("Test warning 2"))).toBe(true);
+  });
+
+  it("collectConsoleWarnings() does not include warnings from before construction", () => {
+    console.warn = originalConsoleWarn;
+    collector.destroy();
+
+    const freshCollector = new MetadataCollector();
+    const warnings = freshCollector.collectConsoleWarnings();
+    expect(warnings).toHaveLength(0);
+    freshCollector.destroy();
+    collector = new MetadataCollector();
+  });
+
+  it("destroy() restores original console.warn", () => {
+    const patched = console.warn;
+    collector.destroy();
+    expect(console.warn).not.toBe(patched);
+    collector = new MetadataCollector();
   });
 });

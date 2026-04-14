@@ -88,11 +88,13 @@ export class PanelApiClient {
 
   async streamProcess(
     id: string,
-    onEvent: (event: ProcessEvent) => void
+    onEvent: (event: ProcessEvent) => void,
+    options?: { repo: string; panelRepo?: string }
   ): Promise<void> {
     const res = await fetch(`${this.apiUrl}/v1/panel/process/${id}`, {
       method: "POST",
       headers: this.headers(),
+      body: JSON.stringify({ repo: options?.repo ?? "", panelRepo: options?.panelRepo }),
     });
     if (!res.ok) throw new Error(`Process stream failed: ${res.status}`);
     if (!res.body) throw new Error("Response body is null");

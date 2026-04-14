@@ -28,6 +28,12 @@ export interface PanelConfig {
   apiKey: string;
   /** GitHub repo to file issues against, e.g. "Consiliency/consiliency-portal" */
   repo: string;
+  /**
+   * Optional: the panel's own repo (e.g. "Consiliency/consiliency-panel").
+   * When set, a BAML RouteToRepo agent decides at process time whether the
+   * feedback is about the host app (→ repo) or the panel widget itself (→ panelRepo).
+   */
+  panelRepo?: string;
   /** GitHub login of the current user (required for tier resolution) */
   githubLogin?: string;
   /** Optional theme overrides */
@@ -114,6 +120,7 @@ export interface SubmissionPayload {
   transcript: ConversationTurn[];
   metadata: SubmissionMetadata;
   consoleErrors?: string[];
+  consoleWarnings?: string[];
   screenshotUrl?: string;
   attachmentUrls?: AttachmentRef[];
   navigationBreadcrumb?: NavigationEntry[];
@@ -121,10 +128,14 @@ export interface SubmissionPayload {
 }
 
 export interface ProcessEvent {
-  type: "progress" | "complete" | "error";
-  message: string;
+  type: "progress" | "completed" | "routing" | "error";
+  message?: string;
   issueUrl?: string;
   issueNumber?: number;
+  /** Emitted on routing events: which repo was chosen and why */
+  target?: "app" | "panel";
+  targetRepo?: string;
+  confidence?: string;
 }
 
 export interface RepoContext {

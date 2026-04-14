@@ -48,8 +48,13 @@ export function PanelProvider({ config, children }: PanelProviderProps) {
         const modes = sdk.getAvailableModes();
         if (modes.length > 0) setActiveModeId(modes[0]);
       }
-    }).catch(() => {
-      // Fail silently — SDK unavailable, panel button just won't show
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(
+        `[Panel] SDK init failed: ${msg}. ` +
+        "Check your apiUrl, apiKey, and PANEL_ALLOWED_ORIGINS backend config. " +
+        "The panel button will not render until init succeeds."
+      );
     });
     return () => {
       cancelled = true;

@@ -29,6 +29,7 @@ export function SubmitButton({ modeId, onDone }: SubmitButtonProps) {
     try {
       const metadata = sdk.metadata.collect();
       const consoleErrors = sdk.metadata.collectConsoleErrors();
+      const consoleWarnings = sdk.metadata.collectConsoleWarnings();
       sdk.conversation.setMetadata(metadata);
 
       const payload: SubmissionPayload = {
@@ -36,6 +37,7 @@ export function SubmitButton({ modeId, onDone }: SubmitButtonProps) {
         metadata,
         screenshotUrl: sdk.conversation.state.screenshotUrl,
         consoleErrors,
+        consoleWarnings,
         repo: sdk.config.repo,
       };
 
@@ -48,14 +50,15 @@ export function SubmitButton({ modeId, onDone }: SubmitButtonProps) {
           if (msg.includes("classif")) setPhase("classifying");
           else if (msg.includes("enrich") || msg.includes("format")) setPhase("classifying");
           else if (msg.includes("creating") || msg.includes("issue")) setPhase("creating");
-        } else if (event.type === "complete") {
+          else if (msg.includes("routing")) setPhase("classifying");
+        } else if (event.type === "completed") {
           setPhase("done");
           sdk.conversation.markSubmitted();
           onDone(event.issueUrl ?? "");
         } else if (event.type === "error") {
           setPhase("error");
         }
-      });
+      }, { repo: sdk.config.repo, panelRepo: sdk.config.panelRepo });
     } catch {
       setPhase("error");
     }
