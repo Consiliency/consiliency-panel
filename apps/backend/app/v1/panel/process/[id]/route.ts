@@ -109,7 +109,10 @@ export async function POST(
           repo_context: repoContext,
           tier: sub.tier,
           console_errors: consoleErrors ?? undefined,
-          navigation_breadcrumb: navigationBreadcrumb ?? undefined,
+          // Map ts → timestamp to match BAML NavigationEntry schema
+          navigation_breadcrumb: navigationBreadcrumb
+            ? navigationBreadcrumb.map(e => ({ url: e.url, title: e.title, timestamp: e.ts }))
+            : undefined,
           component_hint: componentHint ?? undefined,
           attachment_urls: attachmentUrls ?? undefined,
         };
