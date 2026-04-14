@@ -72,13 +72,26 @@ function makeSupabaseMock() {
   const insertMock = vi.fn().mockResolvedValue({ error: null });
   const singleMock = vi.fn().mockResolvedValue({ data: MOCK_SUBMISSION, error: null });
   const selectMock = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: singleMock }) });
+  const validKeySingleMock = vi.fn().mockResolvedValue({
+    data: { product_key: "test", max_tier: "guest", active: true, expires_at: null },
+  });
+  const keySelectMock = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: validKeySingleMock }) });
 
   return {
     from: vi.fn().mockImplementation((table: string) => {
+      if (table === "panel_api_keys") return { select: keySelectMock };
       if (table === "panel_submissions") return { update: updateMock, select: selectMock };
       if (table === "panel_issues") return { insert: insertMock };
       return { update: updateMock, select: selectMock, insert: insertMock };
     }),
+  } as unknown as SupabaseClient;
+}
+
+function makeUnauthorizedSupabaseMock() {
+  const nullSingleMock = vi.fn().mockResolvedValue({ data: null });
+  const selectMock = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: nullSingleMock }) });
+  return {
+    from: vi.fn().mockReturnValue({ select: selectMock }),
   } as unknown as SupabaseClient;
 }
 
@@ -88,6 +101,7 @@ describe("POST /v1/panel/process/[id]", () => {
   });
 
   it("returns 401 without internal secret", async () => {
+    vi.mocked(supabaseLib.getServiceSupabase).mockReturnValue(makeUnauthorizedSupabaseMock());
     const req = new Request("https://panel-api.consiliency.io/v1/panel/process/abc", {
       method: "POST",
       headers: { authorization: "Bearer wrong-secret", "content-type": "application/json" },
@@ -137,9 +151,9 @@ describe("POST /v1/panel/process/[id]", () => {
 
     const types = events.map((e) => e.type);
     expect(types).toContain("progress");
-    expect(types[types.length - 1]).toBe("complete");
+    expect(types[types.length - 1]).toBe("completed");
 
-    const completeEvent = events.find((e) => e.type === "complete");
+    const completeEvent = events.find((e) => e.type === "completed");
     expect(completeEvent?.issueUrl).toContain("github.com");
     expect(completeEvent?.issueNumber).toBe(42);
   });
