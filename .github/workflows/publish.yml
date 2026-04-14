@@ -29,3 +29,4 @@ jobs:
         run: pnpm publish --filter "@consiliency/panel-types" --filter "@consiliency/panel-core" --filter "@consiliency/panel-react" --no-git-checks --access restricted
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
