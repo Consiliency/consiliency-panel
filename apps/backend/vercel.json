@@ -1,0 +1,5 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && npm install -g pnpm && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @consiliency/panel-backend run build"
+}
