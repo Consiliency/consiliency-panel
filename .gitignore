@@ -12,3 +12,5 @@ supabase/.branches/
 supabase/.temp/
 coverage/
 .baml_cache/
+.env*.local
+*.tsbuildinfo
