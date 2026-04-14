@@ -2,7 +2,6 @@ import { resolveUserTier, unauthorized, validateApiKey } from "@/lib/auth";
 import { isRateLimited, tooManyRequests } from "@/lib/ratelimit";
 import { getServiceSupabase } from "@/lib/supabase";
 import type { SubmissionPayload } from "@consiliency/panel-types";
-import { after } from "next/server";
 import { corsPreflight, withCors } from "@/lib/cors";
 
 export async function OPTIONS(req: Request) { return corsPreflight(req); }
@@ -46,23 +45,6 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const submissionId = submission.id as string;
-
-  // Kick off BAML pipeline after response is sent (avoids 30s timeout on synchronous path)
-  after(async () => {
-    try {
-      const processUrl = `${process.env.NEXT_PUBLIC_PANEL_API_URL}/v1/panel/process/${submissionId}`;
-      await fetch(processUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.PANEL_INTERNAL_SECRET}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ repo: body.repo }),
-      });
-    } catch (err) {
-      console.error("Failed to kick off process job:", err);
-    }
-  });
-
+  // The browser calls /v1/panel/process/:id directly after this to stream the BAML pipeline.
   return withCors(Response.json({ id: submissionId }, { status: 202 }), req);
 }
