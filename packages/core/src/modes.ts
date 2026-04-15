@@ -6,25 +6,11 @@ export const BUILT_IN_MODES: ModeDefinition[] = [
     label: "Feedback",
     description: "Report an issue or share feedback",
     comingSoon: false,
+    mode: "agentic",
     questions: [
       {
-        id: "q1",
-        text: "What were you trying to do when you ran into this?",
-        quickReplies: [
-          "Navigating the app",
-          "Submitting a form",
-          "Viewing data",
-          "Something else",
-        ],
-      },
-      {
-        id: "q2",
-        text: "What happened instead of what you expected?",
-      },
-      {
-        id: "q3",
-        text: "How urgent is this for you?",
-        quickReplies: ["Blocking me completely", "Annoying but workable", "Minor issue"],
+        id: "opener",
+        text: "What's going on? A quick format tip: tell me (1) what you were doing, (2) what happened, and (3) what you expected. Screenshots and files are welcome.",
       },
     ],
   },

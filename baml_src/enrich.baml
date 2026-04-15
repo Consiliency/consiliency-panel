@@ -1,5 +1,5 @@
 function EnrichWithRepoContext(input: IssueInput, classification: IssueClassification) -> RepoEnrichment {
-  client Gemma4
+  client Gemma3
   prompt #"
     You are a software engineering assistant helping enrich a bug report with repository context.
 

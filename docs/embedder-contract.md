@@ -45,6 +45,9 @@ Or with the React provider:
 | `apiKey` | Yes | Panel API key issued by the admin portal |
 | `repo` | Yes | Default GitHub repo for host-app issues |
 | `panelRepo` | Optional | Separate GitHub repo for panel-widget issues |
+| `betaModelSelection` | Optional | Show in-panel model picker (beta). Defaults to backend response; set `false` to hide in production |
+| `defaultModelId` | Optional | Override the initially-selected conversation model |
+| `availableModels` | Optional | Narrow the model list from the server-provided defaults |
 
 ## Backend environment
 
@@ -61,6 +64,25 @@ Or with the React provider:
 | `PANEL_ALLOWED_ORIGINS` | Optional | Comma-separated allowed origins; defaults to allow-all |
 | `UPSTASH_REDIS_REST_URL` | Optional | Rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limiting |
+| `PANEL_BETA_MODEL_SELECTION` | Optional | Server-side kill switch for the beta model picker (default `true`) |
+| `OPENAI_API_KEY` | Required for agent | Used by OpenAI / `OpenAINano` (default agent + topic-check) |
+| `OPENROUTER_API_KEY` | Required for agent | Used by OpenRouter-routed agents (Gemini, Gemma, Kimi-VL) |
+| `BAML_MODEL_AGENT_HAIKU` | Optional | Override Claude Haiku model ID (default `claude-haiku-4-5`) |
+| `BAML_MODEL_AGENT_GEMINI` | Optional | Override Gemini Flash-Lite model ID |
+| `BAML_MODEL_AGENT_KIMI_VL` | Optional | Override Kimi-VL model ID |
+| `BAML_MODEL_TOPIC_CHECK` | Optional | Override topic-check model ID (always cheapest Nano) |
+
+## Agentic feedback flow (beta)
+
+The `feedback` mode is now agentic: after a single opener question, an LLM drives the conversation via `POST /v1/panel/next-turn`, emits structured tool calls (`ask_follow_up`, `clarify_intent`, `refuse_off_topic`, `draft_issue`, `revise_draft`), and produces an editable draft in-chat. The user reviews/edits the draft and submits explicitly; a cheap `IsReadyToSubmit` sanity check runs before the real GitHub issue is filed and returns `422 { reason, requiresConfirm: true }` on obviously-thin drafts (user can bypass with `confirmBypass: true`).
+
+After submission, the panel offers a **Request changes** action that starts a comment-drafting loop (`POST /v1/panel/comment-next-turn`). The drafted comment is only posted to GitHub via `POST /v1/panel/comment` after explicit user approval — the agent never writes to GitHub on its own.
+
+### Beta model picker
+
+While `betaModelSelection` is enabled, the panel renders a model dropdown above the mode tabs with five multimodal options (GPT-5 Nano default, Claude Haiku 4.5, Gemini 3.1 Flash-Lite, Gemma 3 27B, Kimi-VL). The selected model drives the conversation and topic-check agents only — the post-submit classify/enrich/fix/format/route pipeline continues to use fixed clients.
+
+To hide the picker in production, either set `config.betaModelSelection = false` at the embedder or `PANEL_BETA_MODEL_SELECTION=false` on the backend.
 
 ## Repo routing with `panelRepo`
 

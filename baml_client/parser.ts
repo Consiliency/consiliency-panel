@@ -23,7 +23,7 @@ import { toBamlError } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
 import type { partial_types } from "./partial_types"
 import type * as types from "./types"
-import type {AttachmentRef, ConversationTurn, FixSuggestion, IssueClassification, IssueInput, IssueLabel, IssueOutput, NavigationEntry, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, RoutingDecision, SubmissionMetadata} from "./types"
+import type {AttachmentRef, ConversationTurn, FixSuggestion, IssueClassification, IssueDraftIn, IssueDraftOut, IssueInput, IssueLabel, IssueOutput, KnownFactsInput, NavigationEntry, OnTopicResult, PreSubmitResult, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, RoutingDecision, SubmissionMetadata, ToolCallOut} from "./types"
 import type TypeBuilder from "./type_builder"
 
 export class LlmResponseParser {
@@ -99,6 +99,98 @@ export class LlmResponseParser {
     }
   }
   
+  IsOnTopic(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): types.OnTopicResult {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "IsOnTopic",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as types.OnTopicResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  IsReadyToSubmit(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): types.PreSubmitResult {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "IsReadyToSubmit",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as types.PreSubmitResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextCommentTurn(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): types.ToolCallOut {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "NextCommentTurn",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as types.ToolCallOut
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextTurn(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): types.ToolCallOut {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "NextTurn",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as types.ToolCallOut
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   RouteToRepo(
       llmResponse: string,
       __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
@@ -140,6 +232,29 @@ export class LlmResponseParser {
         __baml_options__?.clientRegistry,
         __env__,
       ) as types.FixSuggestion
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  UpdateKnownFacts(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): types.KnownFactsInput {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "UpdateKnownFacts",
+        llmResponse,
+        false,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as types.KnownFactsInput
     } catch (error) {
       throw toBamlError(error);
     }
@@ -220,6 +335,98 @@ export class LlmStreamParser {
     }
   }
   
+  IsOnTopic(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): partial_types.OnTopicResult {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "IsOnTopic",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as partial_types.OnTopicResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  IsReadyToSubmit(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): partial_types.PreSubmitResult {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "IsReadyToSubmit",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as partial_types.PreSubmitResult
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextCommentTurn(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): partial_types.ToolCallOut {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "NextCommentTurn",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as partial_types.ToolCallOut
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextTurn(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): partial_types.ToolCallOut {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "NextTurn",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as partial_types.ToolCallOut
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   RouteToRepo(
       llmResponse: string,
       __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
@@ -261,6 +468,29 @@ export class LlmStreamParser {
         __baml_options__?.clientRegistry,
         __env__,
       ) as partial_types.FixSuggestion
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  UpdateKnownFacts(
+      llmResponse: string,
+      __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
+  ): partial_types.KnownFactsInput {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+      return this.runtime.parseLlmResponse(
+        "UpdateKnownFacts",
+        llmResponse,
+        true,
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __baml_options__?.clientRegistry,
+        __env__,
+      ) as partial_types.KnownFactsInput
     } catch (error) {
       throw toBamlError(error);
     }

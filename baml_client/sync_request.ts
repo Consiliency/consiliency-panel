@@ -22,7 +22,7 @@ import type { BamlRuntime, BamlCtxManager, Image, Audio, Pdf, Video } from "@bou
 import { toBamlError, HTTPRequest, ClientRegistry } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
 import type * as types from "./types"
-import type {AttachmentRef, ConversationTurn, FixSuggestion, IssueClassification, IssueInput, IssueLabel, IssueOutput, NavigationEntry, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, RoutingDecision, SubmissionMetadata} from "./types"
+import type {AttachmentRef, ConversationTurn, FixSuggestion, IssueClassification, IssueDraftIn, IssueDraftOut, IssueInput, IssueLabel, IssueOutput, KnownFactsInput, NavigationEntry, OnTopicResult, PreSubmitResult, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, RoutingDecision, SubmissionMetadata, ToolCallOut} from "./types"
 import type TypeBuilder from "./type_builder"
 import type * as events from "./events"
 
@@ -137,6 +137,138 @@ export class HttpRequest {
     }
   }
   
+  IsOnTopic(
+      message: string,app_context: string,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "IsOnTopic",
+        {
+          "message": message,"app_context": app_context
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        false,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  IsReadyToSubmit(
+      draft: types.IssueDraftIn,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "IsReadyToSubmit",
+        {
+          "draft": draft
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        false,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextCommentTurn(
+      issue_body: string,transcript: types.ConversationTurn[],known_facts: types.KnownFactsInput,app_context: string,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "NextCommentTurn",
+        {
+          "issue_body": issue_body,"transcript": transcript,"known_facts": known_facts,"app_context": app_context
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        false,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextTurn(
+      known_facts: types.KnownFactsInput,transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,app_context: string,screenshot_url?: string | null,selected_kind?: string | null,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "NextTurn",
+        {
+          "known_facts": known_facts,"transcript": transcript,"metadata": metadata,"app_context": app_context,"screenshot_url": screenshot_url?? null,"selected_kind": selected_kind?? null
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        false,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   RouteToRepo(
       transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,retained_screenshot_kinds: string[],
       __baml_options__?: BamlCallOptions<never>
@@ -191,6 +323,39 @@ export class HttpRequest {
         "SuggestFix",
         {
           "input": input,"classification": classification,"enrichment": enrichment
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        false,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  UpdateKnownFacts(
+      prior: types.KnownFactsInput,latest_user_turn: string,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "UpdateKnownFacts",
+        {
+          "prior": prior,"latest_user_turn": latest_user_turn
         },
         this.ctxManager.cloneContext(),
         __baml_options__?.tb?.__tb(),
@@ -308,6 +473,138 @@ export class HttpStreamRequest {
     }
   }
   
+  IsOnTopic(
+      message: string,app_context: string,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "IsOnTopic",
+        {
+          "message": message,"app_context": app_context
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        true,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  IsReadyToSubmit(
+      draft: types.IssueDraftIn,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "IsReadyToSubmit",
+        {
+          "draft": draft
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        true,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextCommentTurn(
+      issue_body: string,transcript: types.ConversationTurn[],known_facts: types.KnownFactsInput,app_context: string,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "NextCommentTurn",
+        {
+          "issue_body": issue_body,"transcript": transcript,"known_facts": known_facts,"app_context": app_context
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        true,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  NextTurn(
+      known_facts: types.KnownFactsInput,transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,app_context: string,screenshot_url?: string | null,selected_kind?: string | null,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "NextTurn",
+        {
+          "known_facts": known_facts,"transcript": transcript,"metadata": metadata,"app_context": app_context,"screenshot_url": screenshot_url?? null,"selected_kind": selected_kind?? null
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        true,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
   RouteToRepo(
       transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,retained_screenshot_kinds: string[],
       __baml_options__?: BamlCallOptions<never>
@@ -362,6 +659,39 @@ export class HttpStreamRequest {
         "SuggestFix",
         {
           "input": input,"classification": classification,"enrichment": enrichment
+        },
+        this.ctxManager.cloneContext(),
+        __baml_options__?.tb?.__tb(),
+        __clientRegistry__,
+        true,
+        __env__,
+      )
+    } catch (error) {
+      throw toBamlError(error);
+    }
+  }
+  
+  UpdateKnownFacts(
+      prior: types.KnownFactsInput,latest_user_turn: string,
+      __baml_options__?: BamlCallOptions<never>
+  ): HTTPRequest {
+    try {
+      const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+      const __env__: Record<string, string> = Object.fromEntries(
+        Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+      );
+
+      // Resolve client option to clientRegistry (client takes precedence)
+      let __clientRegistry__ = __baml_options__?.clientRegistry;
+      if (__baml_options__?.client) {
+        __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+        __clientRegistry__.setPrimary(__baml_options__.client);
+      }
+
+      return this.runtime.buildRequestSync(
+        "UpdateKnownFacts",
+        {
+          "prior": prior,"latest_user_turn": latest_user_turn
         },
         this.ctxManager.cloneContext(),
         __baml_options__?.tb?.__tb(),

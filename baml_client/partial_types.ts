@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueInput,  IssueLabel,  IssueOutput,  NavigationEntry,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  RoutingDecision,  SubmissionMetadata } from "./types"
+import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueDraftIn,  IssueDraftOut,  IssueInput,  IssueLabel,  IssueOutput,  KnownFactsInput,  NavigationEntry,  OnTopicResult,  PreSubmitResult,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  RoutingDecision,  SubmissionMetadata,  ToolCallOut } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -59,6 +59,18 @@ export namespace partial_types {
       labels: IssueLabel[]
       requires_reproduction?: boolean | null
     }
+    export interface IssueDraftIn {
+      title?: string | null
+      body?: string | null
+      severity?: string | null
+      kind?: string | null
+    }
+    export interface IssueDraftOut {
+      title?: string | null
+      body?: string | null
+      severity?: string | null
+      kind?: string | null
+    }
     export interface IssueInput {
       transcript: ConversationTurn[]
       metadata?: SubmissionMetadata | null
@@ -84,10 +96,28 @@ export namespace partial_types {
       priority?: string | null
       fix_suggestion?: FixSuggestion | null
     }
+    export interface KnownFactsInput {
+      action?: string | null
+      actual?: string | null
+      expected?: string | null
+      severity?: string | null
+      repro_steps?: string[] | null
+      first_seen?: string | null
+      frequency?: string | null
+      kind?: string | null
+    }
     export interface NavigationEntry {
       url?: string | null
       title?: string | null
       timestamp?: string | null
+    }
+    export interface OnTopicResult {
+      on_topic?: boolean | null
+      redirect_hint?: string | null
+    }
+    export interface PreSubmitResult {
+      ready?: boolean | null
+      reason?: string | null
     }
     export interface RepoContext {
       labels?: RepoLabel[] | null
@@ -123,5 +153,13 @@ export namespace partial_types {
       userAgent?: string | null
       viewport?: string | null
       timestamp?: string | null
+    }
+    export interface ToolCallOut {
+      type?: string | null
+      question?: string | null
+      reason?: string | null
+      options?: string[] | null
+      redirect?: string | null
+      draft?: IssueDraftOut | null
     }
 }

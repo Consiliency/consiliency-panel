@@ -9,16 +9,18 @@ interface ScreenshotCaptureProps {
 
 /** Screenshot button + annotation workflow */
 export function ScreenshotCapture({ onCaptured }: ScreenshotCaptureProps) {
-  const { sdk } = usePanelContext();
+  const { sdk, panelElementRef } = usePanelContext();
   const [capturing, setCapturing] = useState(false);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [pendingPanelBlob, setPendingPanelBlob] = useState<Blob | null>(null);
 
   const handleCapture = async () => {
     setCapturing(true);
     try {
-      const blob = await captureScreenshot();
-      const url = await blobToDataUrl(blob);
+      const { page, panel } = await captureScreenshot({ panelEl: panelElementRef?.current ?? null });
+      setPendingPanelBlob(panel ?? null);
+      const url = await blobToDataUrl(page);
       setDataUrl(url);
     } catch {
       // Capture failed — skip silently
@@ -29,15 +31,31 @@ export function ScreenshotCapture({ onCaptured }: ScreenshotCaptureProps) {
 
   const handleAnnotationDone = async (blob: Blob) => {
     setDataUrl(null);
+    const ts = Date.now();
+    const pageName = `screenshot-page-${ts}.png`;
     try {
-      const url = await sdk.client.uploadAttachment(blob, "screenshot.png");
+      const url = await sdk.client.uploadAttachment(blob, pageName);
       sdk.conversation.setScreenshotUrl(url);
-      sdk.conversation.addAttachment({ url, type: "screenshot", name: "screenshot.png" });
+      sdk.conversation.addAttachment({ url, type: "screenshot", name: pageName, screenshotKind: "page" });
       // Create object URL just for thumbnail display
       setThumbnail(URL.createObjectURL(blob));
       onCaptured(url);
+
+      // Upload the panel capture in the background as a second attachment so
+      // the routing agent can distinguish host-app bugs from panel-widget bugs.
+      if (pendingPanelBlob) {
+        const panelName = `screenshot-panel-${ts}.png`;
+        try {
+          const panelUrl = await sdk.client.uploadAttachment(pendingPanelBlob, panelName);
+          sdk.conversation.addAttachment({ url: panelUrl, type: "screenshot", name: panelName, screenshotKind: "panel" });
+        } catch {
+          /* panel upload failed — page screenshot still goes through */
+        }
+      }
     } catch {
       // Upload failed
+    } finally {
+      setPendingPanelBlob(null);
     }
   };
 

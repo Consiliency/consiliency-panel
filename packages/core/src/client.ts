@@ -1,20 +1,35 @@
 import type {
   CapabilitiesResponse,
+  ConversationTurn,
+  IssueDraft,
+  KnownFacts,
+  NextTurnRequest,
+  NextTurnResponse,
   PanelApiClientConfig,
   ProcessEvent,
   RepoContext,
   SubmissionPayload,
+  ToolCall,
 } from "@consiliency/panel-types";
 
 export class PanelApiClient {
   private apiUrl: string;
   private apiKey: string;
-  private githubLogin: string | undefined;
+  private githubLoginGetter: () => string | undefined;
 
-  constructor({ apiUrl, apiKey, githubLogin }: PanelApiClientConfig & { githubLogin?: string }) {
+  constructor({
+    apiUrl,
+    apiKey,
+    githubLogin,
+    githubLoginGetter,
+  }: PanelApiClientConfig & {
+    githubLogin?: string;
+    /** Dynamic getter — used when the login is resolved asynchronously after construction */
+    githubLoginGetter?: () => string | undefined;
+  }) {
     this.apiUrl = apiUrl.replace(/\/$/, "");
     this.apiKey = apiKey;
-    this.githubLogin = githubLogin;
+    this.githubLoginGetter = githubLoginGetter ?? (() => githubLogin);
   }
 
   private headers(): HeadersInit {
@@ -22,7 +37,8 @@ export class PanelApiClient {
       "Content-Type": "application/json",
       Authorization: `Bearer ${this.apiKey}`,
     };
-    if (this.githubLogin) h["x-github-login"] = this.githubLogin;
+    const login = this.githubLoginGetter();
+    if (login) h["x-github-login"] = login;
     return h;
   }
 
@@ -73,12 +89,90 @@ export class PanelApiClient {
     return storageUrl;
   }
 
+  async nextTurn(req: NextTurnRequest): Promise<NextTurnResponse> {
+    const res = await fetch(`${this.apiUrl}/v1/panel/next-turn`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`nextTurn failed (${res.status}): ${text}`);
+    }
+    return res.json() as Promise<NextTurnResponse>;
+  }
+
+  async patchDraft(id: string, draft: IssueDraft): Promise<void> {
+    const res = await fetch(`${this.apiUrl}/v1/panel/draft/${id}`, {
+      method: "PATCH",
+      headers: this.headers(),
+      body: JSON.stringify({ draft }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`patchDraft failed (${res.status}): ${text}`);
+    }
+  }
+
+  async nextCommentTurn(req: {
+    submissionId: string;
+    issueNumber: number;
+    issueUrl: string;
+    issueBody: string;
+    userText: string;
+    transcript: ConversationTurn[];
+    knownFacts?: KnownFacts;
+    selectedModelId?: string;
+    repo: string;
+    panelRepo?: string;
+  }): Promise<{ draftId: string; toolCall: ToolCall; knownFacts: KnownFacts }> {
+    const res = await fetch(`${this.apiUrl}/v1/panel/comment-next-turn`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`nextCommentTurn failed (${res.status}): ${text}`);
+    }
+    return res.json() as Promise<{
+      draftId: string;
+      toolCall: ToolCall;
+      knownFacts: KnownFacts;
+    }>;
+  }
+
+  async postComment(submissionId: string, body: string): Promise<{ commentUrl: string }> {
+    const res = await fetch(`${this.apiUrl}/v1/panel/comment`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ submissionId, body }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`postComment failed (${res.status}): ${text}`);
+    }
+    return res.json() as Promise<{ commentUrl: string }>;
+  }
+
   async submit(payload: SubmissionPayload): Promise<{ id: string }> {
     const res = await fetch(`${this.apiUrl}/v1/panel/submit`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(payload),
     });
+    if (res.status === 422) {
+      const data = (await res.json()) as { reason?: string; error?: string; requiresConfirm?: boolean };
+      const err = new Error(data.reason ?? data.error ?? "Draft not ready") as Error & {
+        status: number;
+        requiresConfirm: boolean;
+        reason: string;
+      };
+      err.status = 422;
+      err.requiresConfirm = Boolean(data.requiresConfirm);
+      err.reason = data.reason ?? data.error ?? "Draft not ready";
+      throw err;
+    }
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`Submit failed (${res.status}): ${text}`);

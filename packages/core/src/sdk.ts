@@ -16,6 +16,7 @@ export class PanelSDK {
   readonly navigation: NavigationTracker;
 
   private capabilities: CapabilitiesResponse | null = null;
+  private resolvedGithubLogin: string | undefined;
 
   constructor(config: PanelConfig) {
     if (!config.apiUrl) throw new Error("PanelSDK: apiUrl is required");
@@ -23,16 +24,60 @@ export class PanelSDK {
     if (!config.repo) throw new Error("PanelSDK: repo is required");
 
     this.config = config;
-    this.client = new PanelApiClient({ apiUrl: config.apiUrl, apiKey: config.apiKey, githubLogin: config.githubLogin });
+    this.resolvedGithubLogin = config.githubLogin;
+    this.client = new PanelApiClient({
+      apiUrl: config.apiUrl,
+      apiKey: config.apiKey,
+      githubLoginGetter: () => this.resolvedGithubLogin,
+    });
     this.metadata = new MetadataCollector();
     this.modes = new ModeRegistry();
     this.voice = new VoiceInput();
     this.conversation = new ConversationEngine(this.modes);
+    this.conversation.setClient(this.client);
+    this.conversation.setContext({
+      repo: config.repo,
+      panelRepo: config.panelRepo,
+      githubLogin: this.resolvedGithubLogin,
+    });
+    if (config.defaultModelId) {
+      this.conversation.setSelectedModelId(config.defaultModelId);
+    }
     this.navigation = new NavigationTracker(config.navigationTracking === true);
   }
 
   async init(): Promise<void> {
+    // Resolve the GitHub login first if a resolver is provided and we don't
+    // already have one statically — capabilities depend on it for tier lookup.
+    if (!this.resolvedGithubLogin && this.config.resolveGithubLogin) {
+      try {
+        const login = await this.config.resolveGithubLogin();
+        if (login) {
+          this.resolvedGithubLogin = login;
+          this.conversation.setContext({
+            repo: this.config.repo,
+            panelRepo: this.config.panelRepo,
+            githubLogin: login,
+          });
+        }
+      } catch {
+        /* fall back to anonymous */
+      }
+    }
+
     this.capabilities = await this.client.getCapabilities();
+    // Prefer backend-recommended default if no embedder override
+    if (!this.config.defaultModelId && this.capabilities?.defaultModelId) {
+      this.conversation.setSelectedModelId(this.capabilities.defaultModelId);
+    }
+  }
+
+  getGithubLogin(): string | undefined {
+    return this.resolvedGithubLogin;
+  }
+
+  setSelectedModelId(id: string | undefined): void {
+    this.conversation.setSelectedModelId(id);
   }
 
   getCapabilities(): CapabilitiesResponse | null {

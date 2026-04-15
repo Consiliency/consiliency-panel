@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { usePanelContext } from "../PanelProvider";
 import { PanelChat } from "../chat/PanelChat";
+import { ModelPicker } from "../chat/ModelPicker";
+import { SessionsBar } from "./SessionsBar";
 import type { ModeId, SubmissionPayload } from "@consiliency/panel-types";
 
 interface PanelSheetProps {
@@ -18,8 +20,18 @@ const MODE_LABELS: Record<string, string> = {
 
 /** Floating panel sheet containing mode tabs + chat */
 export function PanelSheet({ componentHint, submissionEnhancer, renderInputBarExtras }: PanelSheetProps = {}) {
-  const { isOpen, setIsOpen, capabilities, activeModeId, setActiveModeId } = usePanelContext();
+  const { isOpen, setIsOpen, capabilities, activeModeId, setActiveModeId, currentSessionId, registerPanelElement } = usePanelContext();
   const sheetRef = useRef<HTMLDivElement>(null);
+
+  // Register/unregister the panel root so ScreenshotCapture can filter it
+  // out of the page capture and produce a separate panel screenshot.
+  useEffect(() => {
+    if (isOpen) {
+      registerPanelElement(sheetRef.current);
+      return () => registerPanelElement(null);
+    }
+    return undefined;
+  }, [isOpen, registerPanelElement]);
 
   // Close on Escape
   useEffect(() => {
@@ -55,6 +67,8 @@ export function PanelSheet({ componentHint, submissionEnhancer, renderInputBarEx
 
   return (
     <div className="panel-sheet" ref={sheetRef} role="dialog" aria-label="Feedback panel">
+      <ModelPicker />
+      <SessionsBar />
       <div className="panel-tabs" role="tablist">
         {allModes.map((modeId) => {
           const isAvailable = availableModes.includes(modeId);
@@ -75,6 +89,7 @@ export function PanelSheet({ componentHint, submissionEnhancer, renderInputBarEx
         })}
       </div>
       <PanelChat
+        key={currentSessionId}
         modeId={activeModeId}
         componentHint={componentHint}
         submissionEnhancer={submissionEnhancer}

@@ -136,4 +136,29 @@ describe("PanelApiClient", () => {
       await expect(client.streamProcess("sub-xyz", () => {})).rejects.toThrow("Process stream failed: 500");
     });
   });
+
+  describe("githubLogin headers", () => {
+    it("uses static githubLogin in headers", async () => {
+      const c = new PanelApiClient({ apiUrl: API_URL, apiKey: API_KEY, githubLogin: "alice" });
+      fetchSpy.mockResolvedValueOnce(new Response("{}", { status: 200 }));
+      await c.getCapabilities();
+      const [, opts] = fetchSpy.mock.calls[0] as [string, RequestInit];
+      expect((opts?.headers as Record<string, string>)["x-github-login"]).toBe("alice");
+    });
+
+    it("reads from githubLoginGetter on each request (resolver path)", async () => {
+      let login: string | undefined = undefined;
+      const c = new PanelApiClient({ apiUrl: API_URL, apiKey: API_KEY, githubLoginGetter: () => login });
+      fetchSpy.mockResolvedValueOnce(new Response("{}", { status: 200 }));
+      await c.getCapabilities();
+      let headers = fetchSpy.mock.calls[0][1].headers as Record<string, string>;
+      expect(headers["x-github-login"]).toBeUndefined();
+
+      login = "bob";
+      fetchSpy.mockResolvedValueOnce(new Response("{}", { status: 200 }));
+      await c.getCapabilities();
+      headers = fetchSpy.mock.calls[1][1].headers as Record<string, string>;
+      expect(headers["x-github-login"]).toBe("bob");
+    });
+  });
 });

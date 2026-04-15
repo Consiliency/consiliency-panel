@@ -24,7 +24,7 @@ import { toBamlError, BamlStream, BamlAbortError, Collector, ClientRegistry } fr
 import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types"
 import type { partial_types } from "./partial_types"
 import type * as types from "./types"
-import type {AttachmentRef, ConversationTurn, FixSuggestion, IssueClassification, IssueInput, IssueLabel, IssueOutput, NavigationEntry, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, RoutingDecision, SubmissionMetadata} from "./types"
+import type {AttachmentRef, ConversationTurn, FixSuggestion, IssueClassification, IssueDraftIn, IssueDraftOut, IssueInput, IssueLabel, IssueOutput, KnownFactsInput, NavigationEntry, OnTopicResult, PreSubmitResult, RepoContext, RepoEnrichment, RepoIssue, RepoLabel, RoutingDecision, SubmissionMetadata, ToolCallOut} from "./types"
 import type TypeBuilder from "./type_builder"
 import { AsyncHttpRequest, AsyncHttpStreamRequest } from "./async_request"
 import { LlmResponseParser, LlmStreamParser } from "./parser"
@@ -265,6 +265,230 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             }
             }
             
+        async IsOnTopic(
+        message: string,app_context: string,
+        __baml_options__?: BamlCallOptions<never>
+        ): Promise<types.OnTopicResult> {
+          try {
+          const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+          const __signal__ = __options__.signal;
+
+          if (__signal__?.aborted) {
+          throw new BamlAbortError('Operation was aborted', __signal__.reason);
+          }
+
+          // Check if onTick is provided - route through streaming if so
+          if (__options__.onTick) {
+          const __stream__ = this.stream.IsOnTopic(
+          message,app_context,
+          __baml_options__
+          );
+
+          return await __stream__.getFinalResponse();
+          }
+
+          const __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+          [__options__.collector]) : [];
+          const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+          const __env__: Record<string, string> = Object.fromEntries(
+            Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+            );
+
+            // Resolve client option to clientRegistry (client takes precedence)
+            let __clientRegistry__ = __options__.clientRegistry;
+            if (__options__.client) {
+              __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+              __clientRegistry__.setPrimary(__options__.client);
+            }
+
+            const __raw__ = await this.runtime.callFunction(
+            "IsOnTopic",
+            {
+            "message": message,"app_context": app_context
+            },
+            this.ctxManager.cloneContext(),
+            __options__.tb?.__tb(),
+            __clientRegistry__,
+            __collector__,
+            __options__.tags || {},
+            __env__,
+            __signal__,
+            __options__.watchers,
+            )
+            return __raw__.parsed(false) as types.OnTopicResult
+            } catch (error) {
+            throw toBamlError(error);
+            }
+            }
+            
+        async IsReadyToSubmit(
+        draft: types.IssueDraftIn,
+        __baml_options__?: BamlCallOptions<never>
+        ): Promise<types.PreSubmitResult> {
+          try {
+          const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+          const __signal__ = __options__.signal;
+
+          if (__signal__?.aborted) {
+          throw new BamlAbortError('Operation was aborted', __signal__.reason);
+          }
+
+          // Check if onTick is provided - route through streaming if so
+          if (__options__.onTick) {
+          const __stream__ = this.stream.IsReadyToSubmit(
+          draft,
+          __baml_options__
+          );
+
+          return await __stream__.getFinalResponse();
+          }
+
+          const __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+          [__options__.collector]) : [];
+          const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+          const __env__: Record<string, string> = Object.fromEntries(
+            Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+            );
+
+            // Resolve client option to clientRegistry (client takes precedence)
+            let __clientRegistry__ = __options__.clientRegistry;
+            if (__options__.client) {
+              __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+              __clientRegistry__.setPrimary(__options__.client);
+            }
+
+            const __raw__ = await this.runtime.callFunction(
+            "IsReadyToSubmit",
+            {
+            "draft": draft
+            },
+            this.ctxManager.cloneContext(),
+            __options__.tb?.__tb(),
+            __clientRegistry__,
+            __collector__,
+            __options__.tags || {},
+            __env__,
+            __signal__,
+            __options__.watchers,
+            )
+            return __raw__.parsed(false) as types.PreSubmitResult
+            } catch (error) {
+            throw toBamlError(error);
+            }
+            }
+            
+        async NextCommentTurn(
+        issue_body: string,transcript: types.ConversationTurn[],known_facts: types.KnownFactsInput,app_context: string,
+        __baml_options__?: BamlCallOptions<never>
+        ): Promise<types.ToolCallOut> {
+          try {
+          const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+          const __signal__ = __options__.signal;
+
+          if (__signal__?.aborted) {
+          throw new BamlAbortError('Operation was aborted', __signal__.reason);
+          }
+
+          // Check if onTick is provided - route through streaming if so
+          if (__options__.onTick) {
+          const __stream__ = this.stream.NextCommentTurn(
+          issue_body,transcript,known_facts,app_context,
+          __baml_options__
+          );
+
+          return await __stream__.getFinalResponse();
+          }
+
+          const __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+          [__options__.collector]) : [];
+          const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+          const __env__: Record<string, string> = Object.fromEntries(
+            Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+            );
+
+            // Resolve client option to clientRegistry (client takes precedence)
+            let __clientRegistry__ = __options__.clientRegistry;
+            if (__options__.client) {
+              __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+              __clientRegistry__.setPrimary(__options__.client);
+            }
+
+            const __raw__ = await this.runtime.callFunction(
+            "NextCommentTurn",
+            {
+            "issue_body": issue_body,"transcript": transcript,"known_facts": known_facts,"app_context": app_context
+            },
+            this.ctxManager.cloneContext(),
+            __options__.tb?.__tb(),
+            __clientRegistry__,
+            __collector__,
+            __options__.tags || {},
+            __env__,
+            __signal__,
+            __options__.watchers,
+            )
+            return __raw__.parsed(false) as types.ToolCallOut
+            } catch (error) {
+            throw toBamlError(error);
+            }
+            }
+            
+        async NextTurn(
+        known_facts: types.KnownFactsInput,transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,app_context: string,screenshot_url?: string | null,selected_kind?: string | null,
+        __baml_options__?: BamlCallOptions<never>
+        ): Promise<types.ToolCallOut> {
+          try {
+          const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+          const __signal__ = __options__.signal;
+
+          if (__signal__?.aborted) {
+          throw new BamlAbortError('Operation was aborted', __signal__.reason);
+          }
+
+          // Check if onTick is provided - route through streaming if so
+          if (__options__.onTick) {
+          const __stream__ = this.stream.NextTurn(
+          known_facts,transcript,metadata,app_context,screenshot_url,selected_kind,
+          __baml_options__
+          );
+
+          return await __stream__.getFinalResponse();
+          }
+
+          const __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+          [__options__.collector]) : [];
+          const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+          const __env__: Record<string, string> = Object.fromEntries(
+            Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+            );
+
+            // Resolve client option to clientRegistry (client takes precedence)
+            let __clientRegistry__ = __options__.clientRegistry;
+            if (__options__.client) {
+              __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+              __clientRegistry__.setPrimary(__options__.client);
+            }
+
+            const __raw__ = await this.runtime.callFunction(
+            "NextTurn",
+            {
+            "known_facts": known_facts,"transcript": transcript,"metadata": metadata,"app_context": app_context,"screenshot_url": screenshot_url?? null,"selected_kind": selected_kind?? null
+            },
+            this.ctxManager.cloneContext(),
+            __options__.tb?.__tb(),
+            __clientRegistry__,
+            __collector__,
+            __options__.tags || {},
+            __env__,
+            __signal__,
+            __options__.watchers,
+            )
+            return __raw__.parsed(false) as types.ToolCallOut
+            } catch (error) {
+            throw toBamlError(error);
+            }
+            }
+            
         async RouteToRepo(
         transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,retained_screenshot_kinds: string[],
         __baml_options__?: BamlCallOptions<never>
@@ -372,6 +596,62 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             __options__.watchers,
             )
             return __raw__.parsed(false) as types.FixSuggestion
+            } catch (error) {
+            throw toBamlError(error);
+            }
+            }
+            
+        async UpdateKnownFacts(
+        prior: types.KnownFactsInput,latest_user_turn: string,
+        __baml_options__?: BamlCallOptions<never>
+        ): Promise<types.KnownFactsInput> {
+          try {
+          const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+          const __signal__ = __options__.signal;
+
+          if (__signal__?.aborted) {
+          throw new BamlAbortError('Operation was aborted', __signal__.reason);
+          }
+
+          // Check if onTick is provided - route through streaming if so
+          if (__options__.onTick) {
+          const __stream__ = this.stream.UpdateKnownFacts(
+          prior,latest_user_turn,
+          __baml_options__
+          );
+
+          return await __stream__.getFinalResponse();
+          }
+
+          const __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+          [__options__.collector]) : [];
+          const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+          const __env__: Record<string, string> = Object.fromEntries(
+            Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+            );
+
+            // Resolve client option to clientRegistry (client takes precedence)
+            let __clientRegistry__ = __options__.clientRegistry;
+            if (__options__.client) {
+              __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+              __clientRegistry__.setPrimary(__options__.client);
+            }
+
+            const __raw__ = await this.runtime.callFunction(
+            "UpdateKnownFacts",
+            {
+            "prior": prior,"latest_user_turn": latest_user_turn
+            },
+            this.ctxManager.cloneContext(),
+            __options__.tb?.__tb(),
+            __clientRegistry__,
+            __collector__,
+            __options__.tags || {},
+            __env__,
+            __signal__,
+            __options__.watchers,
+            )
+            return __raw__.parsed(false) as types.KnownFactsInput
             } catch (error) {
             throw toBamlError(error);
             }
@@ -613,6 +893,302 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
                   }
                   }
                   
+            IsOnTopic(
+            message: string,app_context: string,
+            __baml_options__?: BamlCallOptions<never>
+            ): BamlStream<partial_types.OnTopicResult, types.OnTopicResult>
+              {
+              try {
+              const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+              const __signal__ = __options__.signal;
+
+              if (__signal__?.aborted) {
+              throw new BamlAbortError('Operation was aborted', __signal__.reason);
+              }
+
+              let __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+              [__options__.collector]) : [];
+
+              let __onTickWrapper__: (() => void) | undefined;
+
+              // Create collector and wrap onTick if provided
+              if (__options__.onTick) {
+              const __tickCollector__ = new Collector("on-tick-collector");
+              __collector__ = [...__collector__, __tickCollector__];
+
+              __onTickWrapper__ = () => {
+              const __log__ = __tickCollector__.last;
+              if (__log__) {
+              try {
+              __options__.onTick!("Unknown", __log__);
+              } catch (error) {
+              console.error("Error in onTick callback for IsOnTopic", error);
+              }
+              }
+              };
+              }
+
+              const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+              const __env__: Record<string, string> = Object.fromEntries(
+                Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+                );
+
+                // Resolve client option to clientRegistry (client takes precedence)
+                let __clientRegistry__ = __options__.clientRegistry;
+                if (__options__.client) {
+                  __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+                  __clientRegistry__.setPrimary(__options__.client);
+                }
+
+                const __raw__ = this.runtime.streamFunction(
+                "IsOnTopic",
+                {
+                "message": message,"app_context": app_context
+                },
+                undefined,
+                this.ctxManager.cloneContext(),
+                __options__.tb?.__tb(),
+                __clientRegistry__,
+                __collector__,
+                __options__.tags || {},
+                __env__,
+                __signal__,
+                __onTickWrapper__,
+                )
+                return new BamlStream<partial_types.OnTopicResult, types.OnTopicResult>(
+                  __raw__,
+                  (a): partial_types.OnTopicResult => a,
+                  (a): types.OnTopicResult => a,
+                  this.ctxManager.cloneContext(),
+                  __options__.signal,
+                  )
+                  } catch (error) {
+                  throw toBamlError(error);
+                  }
+                  }
+                  
+            IsReadyToSubmit(
+            draft: types.IssueDraftIn,
+            __baml_options__?: BamlCallOptions<never>
+            ): BamlStream<partial_types.PreSubmitResult, types.PreSubmitResult>
+              {
+              try {
+              const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+              const __signal__ = __options__.signal;
+
+              if (__signal__?.aborted) {
+              throw new BamlAbortError('Operation was aborted', __signal__.reason);
+              }
+
+              let __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+              [__options__.collector]) : [];
+
+              let __onTickWrapper__: (() => void) | undefined;
+
+              // Create collector and wrap onTick if provided
+              if (__options__.onTick) {
+              const __tickCollector__ = new Collector("on-tick-collector");
+              __collector__ = [...__collector__, __tickCollector__];
+
+              __onTickWrapper__ = () => {
+              const __log__ = __tickCollector__.last;
+              if (__log__) {
+              try {
+              __options__.onTick!("Unknown", __log__);
+              } catch (error) {
+              console.error("Error in onTick callback for IsReadyToSubmit", error);
+              }
+              }
+              };
+              }
+
+              const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+              const __env__: Record<string, string> = Object.fromEntries(
+                Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+                );
+
+                // Resolve client option to clientRegistry (client takes precedence)
+                let __clientRegistry__ = __options__.clientRegistry;
+                if (__options__.client) {
+                  __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+                  __clientRegistry__.setPrimary(__options__.client);
+                }
+
+                const __raw__ = this.runtime.streamFunction(
+                "IsReadyToSubmit",
+                {
+                "draft": draft
+                },
+                undefined,
+                this.ctxManager.cloneContext(),
+                __options__.tb?.__tb(),
+                __clientRegistry__,
+                __collector__,
+                __options__.tags || {},
+                __env__,
+                __signal__,
+                __onTickWrapper__,
+                )
+                return new BamlStream<partial_types.PreSubmitResult, types.PreSubmitResult>(
+                  __raw__,
+                  (a): partial_types.PreSubmitResult => a,
+                  (a): types.PreSubmitResult => a,
+                  this.ctxManager.cloneContext(),
+                  __options__.signal,
+                  )
+                  } catch (error) {
+                  throw toBamlError(error);
+                  }
+                  }
+                  
+            NextCommentTurn(
+            issue_body: string,transcript: types.ConversationTurn[],known_facts: types.KnownFactsInput,app_context: string,
+            __baml_options__?: BamlCallOptions<never>
+            ): BamlStream<partial_types.ToolCallOut, types.ToolCallOut>
+              {
+              try {
+              const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+              const __signal__ = __options__.signal;
+
+              if (__signal__?.aborted) {
+              throw new BamlAbortError('Operation was aborted', __signal__.reason);
+              }
+
+              let __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+              [__options__.collector]) : [];
+
+              let __onTickWrapper__: (() => void) | undefined;
+
+              // Create collector and wrap onTick if provided
+              if (__options__.onTick) {
+              const __tickCollector__ = new Collector("on-tick-collector");
+              __collector__ = [...__collector__, __tickCollector__];
+
+              __onTickWrapper__ = () => {
+              const __log__ = __tickCollector__.last;
+              if (__log__) {
+              try {
+              __options__.onTick!("Unknown", __log__);
+              } catch (error) {
+              console.error("Error in onTick callback for NextCommentTurn", error);
+              }
+              }
+              };
+              }
+
+              const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+              const __env__: Record<string, string> = Object.fromEntries(
+                Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+                );
+
+                // Resolve client option to clientRegistry (client takes precedence)
+                let __clientRegistry__ = __options__.clientRegistry;
+                if (__options__.client) {
+                  __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+                  __clientRegistry__.setPrimary(__options__.client);
+                }
+
+                const __raw__ = this.runtime.streamFunction(
+                "NextCommentTurn",
+                {
+                "issue_body": issue_body,"transcript": transcript,"known_facts": known_facts,"app_context": app_context
+                },
+                undefined,
+                this.ctxManager.cloneContext(),
+                __options__.tb?.__tb(),
+                __clientRegistry__,
+                __collector__,
+                __options__.tags || {},
+                __env__,
+                __signal__,
+                __onTickWrapper__,
+                )
+                return new BamlStream<partial_types.ToolCallOut, types.ToolCallOut>(
+                  __raw__,
+                  (a): partial_types.ToolCallOut => a,
+                  (a): types.ToolCallOut => a,
+                  this.ctxManager.cloneContext(),
+                  __options__.signal,
+                  )
+                  } catch (error) {
+                  throw toBamlError(error);
+                  }
+                  }
+                  
+            NextTurn(
+            known_facts: types.KnownFactsInput,transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,app_context: string,screenshot_url?: string | null,selected_kind?: string | null,
+            __baml_options__?: BamlCallOptions<never>
+            ): BamlStream<partial_types.ToolCallOut, types.ToolCallOut>
+              {
+              try {
+              const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+              const __signal__ = __options__.signal;
+
+              if (__signal__?.aborted) {
+              throw new BamlAbortError('Operation was aborted', __signal__.reason);
+              }
+
+              let __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+              [__options__.collector]) : [];
+
+              let __onTickWrapper__: (() => void) | undefined;
+
+              // Create collector and wrap onTick if provided
+              if (__options__.onTick) {
+              const __tickCollector__ = new Collector("on-tick-collector");
+              __collector__ = [...__collector__, __tickCollector__];
+
+              __onTickWrapper__ = () => {
+              const __log__ = __tickCollector__.last;
+              if (__log__) {
+              try {
+              __options__.onTick!("Unknown", __log__);
+              } catch (error) {
+              console.error("Error in onTick callback for NextTurn", error);
+              }
+              }
+              };
+              }
+
+              const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+              const __env__: Record<string, string> = Object.fromEntries(
+                Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+                );
+
+                // Resolve client option to clientRegistry (client takes precedence)
+                let __clientRegistry__ = __options__.clientRegistry;
+                if (__options__.client) {
+                  __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+                  __clientRegistry__.setPrimary(__options__.client);
+                }
+
+                const __raw__ = this.runtime.streamFunction(
+                "NextTurn",
+                {
+                "known_facts": known_facts,"transcript": transcript,"metadata": metadata,"app_context": app_context,"screenshot_url": screenshot_url ?? null,"selected_kind": selected_kind ?? null
+                },
+                undefined,
+                this.ctxManager.cloneContext(),
+                __options__.tb?.__tb(),
+                __clientRegistry__,
+                __collector__,
+                __options__.tags || {},
+                __env__,
+                __signal__,
+                __onTickWrapper__,
+                )
+                return new BamlStream<partial_types.ToolCallOut, types.ToolCallOut>(
+                  __raw__,
+                  (a): partial_types.ToolCallOut => a,
+                  (a): types.ToolCallOut => a,
+                  this.ctxManager.cloneContext(),
+                  __options__.signal,
+                  )
+                  } catch (error) {
+                  throw toBamlError(error);
+                  }
+                  }
+                  
             RouteToRepo(
             transcript: types.ConversationTurn[],metadata: types.SubmissionMetadata,retained_screenshot_kinds: string[],
             __baml_options__?: BamlCallOptions<never>
@@ -753,6 +1329,80 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
                   __raw__,
                   (a): partial_types.FixSuggestion => a,
                   (a): types.FixSuggestion => a,
+                  this.ctxManager.cloneContext(),
+                  __options__.signal,
+                  )
+                  } catch (error) {
+                  throw toBamlError(error);
+                  }
+                  }
+                  
+            UpdateKnownFacts(
+            prior: types.KnownFactsInput,latest_user_turn: string,
+            __baml_options__?: BamlCallOptions<never>
+            ): BamlStream<partial_types.KnownFactsInput, types.KnownFactsInput>
+              {
+              try {
+              const __options__ = { ...this.bamlOptions, ...(__baml_options__ || {}) }
+              const __signal__ = __options__.signal;
+
+              if (__signal__?.aborted) {
+              throw new BamlAbortError('Operation was aborted', __signal__.reason);
+              }
+
+              let __collector__ = __options__.collector ? (Array.isArray(__options__.collector) ? __options__.collector :
+              [__options__.collector]) : [];
+
+              let __onTickWrapper__: (() => void) | undefined;
+
+              // Create collector and wrap onTick if provided
+              if (__options__.onTick) {
+              const __tickCollector__ = new Collector("on-tick-collector");
+              __collector__ = [...__collector__, __tickCollector__];
+
+              __onTickWrapper__ = () => {
+              const __log__ = __tickCollector__.last;
+              if (__log__) {
+              try {
+              __options__.onTick!("Unknown", __log__);
+              } catch (error) {
+              console.error("Error in onTick callback for UpdateKnownFacts", error);
+              }
+              }
+              };
+              }
+
+              const __rawEnv__ = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
+              const __env__: Record<string, string> = Object.fromEntries(
+                Object.entries(__rawEnv__).filter(([_, value]) => value !== undefined) as [string, string][]
+                );
+
+                // Resolve client option to clientRegistry (client takes precedence)
+                let __clientRegistry__ = __options__.clientRegistry;
+                if (__options__.client) {
+                  __clientRegistry__ = __clientRegistry__ || new ClientRegistry();
+                  __clientRegistry__.setPrimary(__options__.client);
+                }
+
+                const __raw__ = this.runtime.streamFunction(
+                "UpdateKnownFacts",
+                {
+                "prior": prior,"latest_user_turn": latest_user_turn
+                },
+                undefined,
+                this.ctxManager.cloneContext(),
+                __options__.tb?.__tb(),
+                __clientRegistry__,
+                __collector__,
+                __options__.tags || {},
+                __env__,
+                __signal__,
+                __onTickWrapper__,
+                )
+                return new BamlStream<partial_types.KnownFactsInput, types.KnownFactsInput>(
+                  __raw__,
+                  (a): partial_types.KnownFactsInput => a,
+                  (a): types.KnownFactsInput => a,
                   this.ctxManager.cloneContext(),
                   __options__.signal,
                   )

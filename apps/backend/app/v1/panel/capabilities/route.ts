@@ -1,6 +1,7 @@
 import { resolveUserTier, unauthorized, validateApiKey } from "@/lib/auth";
 import { isRateLimited, tooManyRequests } from "@/lib/ratelimit";
 import { corsPreflight, withCors } from "@/lib/cors";
+import { PANEL_MODELS, DEFAULT_MODEL_ID, isBetaModelSelectionEnabled } from "@/lib/model-catalog";
 
 export async function OPTIONS(req: Request) { return corsPreflight(req); }
 
@@ -18,5 +19,16 @@ export async function GET(req: Request): Promise<Response> {
     tier = await resolveUserTier(githubLogin, key.productKey, key.maxTier);
   }
 
-  return withCors(Response.json({ tier, modes: ["feedback"] }), req);
+  const betaModelSelection = isBetaModelSelectionEnabled();
+
+  return withCors(
+    Response.json({
+      tier,
+      modes: ["feedback"],
+      betaModelSelection,
+      models: betaModelSelection ? PANEL_MODELS : [],
+      defaultModelId: DEFAULT_MODEL_ID,
+    }),
+    req,
+  );
 }

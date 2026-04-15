@@ -78,6 +78,22 @@ export interface IssueClassification {
   
 }
 
+export interface IssueDraftIn {
+  title: string
+  body: string
+  severity: string
+  kind: string
+  
+}
+
+export interface IssueDraftOut {
+  title: string
+  body: string
+  severity: string
+  kind: string
+  
+}
+
 export interface IssueInput {
   transcript: ConversationTurn[]
   metadata: SubmissionMetadata
@@ -109,10 +125,34 @@ export interface IssueOutput {
   
 }
 
+export interface KnownFactsInput {
+  action?: string | null
+  actual?: string | null
+  expected?: string | null
+  severity?: string | null
+  repro_steps?: string[] | null
+  first_seen?: string | null
+  frequency?: string | null
+  kind?: string | null
+  
+}
+
 export interface NavigationEntry {
   url: string
   title: string
   timestamp: string
+  
+}
+
+export interface OnTopicResult {
+  on_topic: boolean
+  redirect_hint?: string | null
+  
+}
+
+export interface PreSubmitResult {
+  ready: boolean
+  reason?: string | null
   
 }
 
@@ -160,5 +200,15 @@ export interface SubmissionMetadata {
   userAgent: string
   viewport: string
   timestamp: string
+  
+}
+
+export interface ToolCallOut {
+  type: string
+  question?: string | null
+  reason?: string | null
+  options?: string[] | null
+  redirect?: string | null
+  draft?: IssueDraftOut | null
   
 }

@@ -4,8 +4,8 @@ generator lang_ts {
   version "0.220.0"
 }
 
-// Classification: fast + cheap structured output
-// Default: gpt-4.1-nano ($0.05/$0.20 per 1M)
+// Classification + routing + cheap structured output
+// Default: gpt-5-nano
 // Override via: BAML_MODEL_CLASSIFY=<model-id>
 client<llm> OpenAINano {
   provider openai
@@ -17,9 +17,9 @@ client<llm> OpenAINano {
 }
 
 // Enrichment: repo context + code understanding via OpenRouter
-// Default: google/gemma-4-31b-it ($0.13/$0.38 per 1M)
+// Default: google/gemma-3-27b-it
 // Override via: BAML_MODEL_ENRICH=<openrouter-model-id>
-client<llm> Gemma4 {
+client<llm> Gemma3 {
   provider openai
   options {
     model env.BAML_MODEL_ENRICH
@@ -51,5 +51,53 @@ client<llm> KimiK2 {
     base_url "https://openrouter.ai/api/v1"
     api_key env.OPENROUTER_API_KEY
     max_tokens 4096
+  }
+}
+
+// --- Conversation agents (user-selectable in beta model picker) ---
+
+// Claude Haiku 4.5 — Anthropic direct
+// Override via: BAML_MODEL_AGENT_HAIKU=<anthropic-model-id>
+client<llm> ClaudeHaiku {
+  provider anthropic
+  options {
+    model env.BAML_MODEL_AGENT_HAIKU
+    max_tokens 2048
+    api_key env.ANTHROPIC_API_KEY
+  }
+}
+
+// Gemini 3.1 Flash-Lite — OpenRouter
+// Override via: BAML_MODEL_AGENT_GEMINI=<openrouter-model-id>
+client<llm> GeminiFlashLite {
+  provider openai
+  options {
+    model env.BAML_MODEL_AGENT_GEMINI
+    base_url "https://openrouter.ai/api/v1"
+    api_key env.OPENROUTER_API_KEY
+    max_tokens 2048
+  }
+}
+
+// Kimi-VL — OpenRouter (multimodal; distinct from text-only KimiK2)
+// Override via: BAML_MODEL_AGENT_KIMI_VL=<openrouter-model-id>
+client<llm> KimiVL {
+  provider openai
+  options {
+    model env.BAML_MODEL_AGENT_KIMI_VL
+    base_url "https://openrouter.ai/api/v1"
+    api_key env.OPENROUTER_API_KEY
+    max_tokens 2048
+  }
+}
+
+// Topic relevance pre-check — fixed cheap Nano, not user-selectable
+// Override via: BAML_MODEL_TOPIC_CHECK=<model-id>
+client<llm> TopicCheck {
+  provider openai
+  options {
+    model env.BAML_MODEL_TOPIC_CHECK
+    max_tokens 256
+    api_key env.OPENAI_API_KEY
   }
 }

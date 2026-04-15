@@ -125,6 +125,20 @@ Model assignments (in `baml_src/clients.baml`):
 - `EnrichWithRepoContext` — `claude-sonnet-4-6` (code reasoning)
 - `FormatAsGitHubIssue` — `claude-sonnet-4-6` (quality output)
 
+### Agentic feedback (beta)
+
+The `feedback` mode runs an LLM-driven intake loop (`NextTurn` → structured tool calls → editable draft → user-approved submit → optional `NextCommentTurn` for follow-up). While in beta, embedders see an in-panel **model picker** with five multimodal options for the conversation agent:
+
+| Label | BAML client | Provider |
+|---|---|---|
+| GPT-5 Nano (default) | `OpenAINano` | OpenAI |
+| Claude Haiku 4.5 | `ClaudeHaiku` | Anthropic |
+| Gemini 3.1 Flash-Lite | `GeminiFlashLite` | Google / OpenRouter |
+| Gemma 3 27B | `Gemma3` | Google / OpenRouter |
+| Kimi-VL | `KimiVL` | Moonshot / OpenRouter |
+
+Turn the picker off in production via embedder config (`betaModelSelection: false`) or backend env (`PANEL_BETA_MODEL_SELECTION=false`). When disabled, the backend ignores any `selectedModelId` and falls back to the default client for both intake and comment drafting. A fixed `TopicCheck` client (always cheapest Nano) runs an input-scope guardrail before every agent turn and is never user-selectable.
+
 ## Admin Setup
 
 1. **Create an API key** — navigate to `/admin/api-keys` in the portal. Copy the raw key once (it is not stored).

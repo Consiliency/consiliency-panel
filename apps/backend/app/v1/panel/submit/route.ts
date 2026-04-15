@@ -1,8 +1,9 @@
 import { resolveUserTier, unauthorized, validateApiKey } from "@/lib/auth";
 import { isRateLimited, tooManyRequests } from "@/lib/ratelimit";
 import { getServiceSupabase } from "@/lib/supabase";
-import type { SubmissionPayload } from "@consiliency/panel-types";
+import type { IssueDraft, SubmissionPayload } from "@consiliency/panel-types";
 import { corsPreflight, withCors } from "@/lib/cors";
+import { DEFAULT_MODEL_ID, isBetaModelSelectionEnabled } from "@/lib/model-catalog";
 
 export async function OPTIONS(req: Request) { return corsPreflight(req); }
 
@@ -19,11 +20,78 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  const supabase = getServiceSupabase();
+
+  // ── Agentic path: the submission row already exists from /next-turn ──────
+  if (body.useDraft && body.submissionId) {
+    const { data: row } = await supabase
+      .from("panel_submissions")
+      .select("id, metadata, product_key, tier")
+      .eq("id", body.submissionId)
+      .single();
+
+    if (!row) {
+      return withCors(Response.json({ error: "Submission not found" }, { status: 404 }), req);
+    }
+    if ((row.product_key as string) !== key.productKey) {
+      return withCors(unauthorized(), req);
+    }
+
+    const meta = ((row.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+    const draft = meta.draft as IssueDraft | undefined;
+    if (!draft) {
+      return withCors(
+        Response.json({ error: "No draft on submission" }, { status: 400 }),
+        req,
+      );
+    }
+
+    // Pre-submit sanity check (skippable via confirmBypass)
+    if (!body.confirmBypass) {
+      try {
+        const { b } = await import("baml_client");
+        const res = await b.IsReadyToSubmit({
+          title: draft.title,
+          body: draft.body,
+          severity: draft.severity,
+          kind: draft.kind,
+        });
+        if (!res.ready) {
+          return withCors(
+            Response.json(
+              {
+                error: "Draft not ready",
+                reason: res.reason ?? "The draft looks too thin to file.",
+                requiresConfirm: true,
+              },
+              { status: 422 },
+            ),
+            req,
+          );
+        }
+      } catch (err) {
+        console.warn("[submit] IsReadyToSubmit failed, allowing submission:", err);
+      }
+    }
+
+    await supabase
+      .from("panel_submissions")
+      .update({
+        status: "pending",
+        selected_model_id: isBetaModelSelectionEnabled()
+          ? body.selectedModelId ?? DEFAULT_MODEL_ID
+          : DEFAULT_MODEL_ID,
+      })
+      .eq("id", body.submissionId);
+
+    return withCors(Response.json({ id: body.submissionId }, { status: 202 }), req);
+  }
+
+  // ── Scripted path (legacy): insert a new submission row ─────────────────
   const tier = body.githubLogin
     ? await resolveUserTier(body.githubLogin, key.productKey, key.maxTier)
     : key.maxTier;
 
-  const supabase = getServiceSupabase();
   const { data: submission, error } = await supabase
     .from("panel_submissions")
     .insert({
@@ -39,6 +107,9 @@ export async function POST(req: Request): Promise<Response> {
       navigation_breadcrumb: (body as any).navigationBreadcrumb ?? null,
       component_hint: (body as any).componentHint ?? null,
       attachment_urls: (body as any).attachmentUrls ?? null,
+      selected_model_id: isBetaModelSelectionEnabled()
+        ? body.selectedModelId ?? DEFAULT_MODEL_ID
+        : DEFAULT_MODEL_ID,
     })
     .select("id")
     .single();
@@ -49,6 +120,5 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const submissionId = submission.id as string;
-  // The browser calls /v1/panel/process/:id directly after this to stream the BAML pipeline.
   return withCors(Response.json({ id: submissionId }, { status: 202 }), req);
 }

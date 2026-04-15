@@ -35,13 +35,23 @@ export default class TypeBuilder {
     
     IssueClassification: ClassViewer<'IssueClassification', "category" | "severity" | "labels" | "requires_reproduction">;
     
+    IssueDraftIn: ClassViewer<'IssueDraftIn', "title" | "body" | "severity" | "kind">;
+    
+    IssueDraftOut: ClassViewer<'IssueDraftOut', "title" | "body" | "severity" | "kind">;
+    
     IssueInput: ClassViewer<'IssueInput', "transcript" | "metadata" | "repo_context" | "tier" | "console_errors" | "console_warnings" | "navigation_breadcrumb" | "component_hint" | "attachment_urls">;
     
     IssueLabel: ClassViewer<'IssueLabel', "name" | "reason">;
     
     IssueOutput: ClassViewer<'IssueOutput', "plain_summary" | "technical_details" | "github_title" | "github_body" | "labels" | "assignee" | "priority" | "fix_suggestion">;
     
+    KnownFactsInput: ClassViewer<'KnownFactsInput', "action" | "actual" | "expected" | "severity" | "repro_steps" | "first_seen" | "frequency" | "kind">;
+    
     NavigationEntry: ClassViewer<'NavigationEntry', "url" | "title" | "timestamp">;
+    
+    OnTopicResult: ClassViewer<'OnTopicResult', "on_topic" | "redirect_hint">;
+    
+    PreSubmitResult: ClassViewer<'PreSubmitResult', "ready" | "reason">;
     
     RepoContext: ClassViewer<'RepoContext', "labels" | "recentIssues" | "relevantFiles" | "file_contents">;
     
@@ -55,12 +65,14 @@ export default class TypeBuilder {
     
     SubmissionMetadata: ClassViewer<'SubmissionMetadata', "url" | "title" | "userAgent" | "viewport" | "timestamp">;
     
+    ToolCallOut: ClassViewer<'ToolCallOut', "type" | "question" | "reason" | "options" | "redirect" | "draft">;
+    
     
 
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueInput","IssueLabel","IssueOutput","NavigationEntry","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","RoutingDecision","SubmissionMetadata",
+            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueDraftIn","IssueDraftOut","IssueInput","IssueLabel","IssueOutput","KnownFactsInput","NavigationEntry","OnTopicResult","PreSubmitResult","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","RoutingDecision","SubmissionMetadata","ToolCallOut",
           ]),
           enums: new Set([
             
@@ -84,6 +96,14 @@ export default class TypeBuilder {
           "category","severity","labels","requires_reproduction",
         ]);
         
+        this.IssueDraftIn = this.tb.classViewer("IssueDraftIn", [
+          "title","body","severity","kind",
+        ]);
+        
+        this.IssueDraftOut = this.tb.classViewer("IssueDraftOut", [
+          "title","body","severity","kind",
+        ]);
+        
         this.IssueInput = this.tb.classViewer("IssueInput", [
           "transcript","metadata","repo_context","tier","console_errors","console_warnings","navigation_breadcrumb","component_hint","attachment_urls",
         ]);
@@ -96,8 +116,20 @@ export default class TypeBuilder {
           "plain_summary","technical_details","github_title","github_body","labels","assignee","priority","fix_suggestion",
         ]);
         
+        this.KnownFactsInput = this.tb.classViewer("KnownFactsInput", [
+          "action","actual","expected","severity","repro_steps","first_seen","frequency","kind",
+        ]);
+        
         this.NavigationEntry = this.tb.classViewer("NavigationEntry", [
           "url","title","timestamp",
+        ]);
+        
+        this.OnTopicResult = this.tb.classViewer("OnTopicResult", [
+          "on_topic","redirect_hint",
+        ]);
+        
+        this.PreSubmitResult = this.tb.classViewer("PreSubmitResult", [
+          "ready","reason",
         ]);
         
         this.RepoContext = this.tb.classViewer("RepoContext", [
@@ -122,6 +154,10 @@ export default class TypeBuilder {
         
         this.SubmissionMetadata = this.tb.classViewer("SubmissionMetadata", [
           "url","title","userAgent","viewport","timestamp",
+        ]);
+        
+        this.ToolCallOut = this.tb.classViewer("ToolCallOut", [
+          "type","question","reason","options","redirect","draft",
         ]);
         
         
