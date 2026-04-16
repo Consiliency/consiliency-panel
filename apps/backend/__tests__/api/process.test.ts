@@ -69,10 +69,25 @@ const MOCK_ISSUE_OUTPUT = {
 };
 
 function makeSupabaseMock(submission = MOCK_SUBMISSION) {
-  const updateMock = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) });
+  // Build a chainable mock for the idempotency guard:
+  // .update().eq().in().select().maybeSingle()
+  const idempotencyMaybeSingle = vi.fn().mockResolvedValue({ data: { id: submission.id }, error: null });
+  const idempotencySelect = vi.fn().mockReturnValue({ maybeSingle: idempotencyMaybeSingle });
+  const idempotencyIn = vi.fn().mockReturnValue({ select: idempotencySelect });
+  const idempotencyEq = vi.fn().mockReturnValue({ in: idempotencyIn });
+  const updateMock = vi.fn().mockReturnValue({ eq: idempotencyEq });
+
   const insertMock = vi.fn().mockResolvedValue({ error: null });
   const singleMock = vi.fn().mockResolvedValue({ data: submission, error: null });
   const selectMock = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: singleMock }) });
+
+  // Status update at end of pipeline: .update().eq().resolves
+  const finalUpdateEq = vi.fn().mockResolvedValue({ error: null });
+  const finalUpdateMock = vi.fn().mockReturnValue({ eq: finalUpdateEq });
+
+  // Track update call count to differentiate idempotency guard (1st) from final status update (2nd+)
+  let updateCallCount = 0;
+
   const validKeySingleMock = vi.fn().mockResolvedValue({
     data: { product_key: "test", max_tier: "guest", active: true, expires_at: null },
   });
@@ -81,7 +96,16 @@ function makeSupabaseMock(submission = MOCK_SUBMISSION) {
   return {
     from: vi.fn().mockImplementation((table: string) => {
       if (table === "panel_api_keys") return { select: keySelectMock };
-      if (table === "panel_submissions") return { update: updateMock, select: selectMock };
+      if (table === "panel_submissions") {
+        return {
+          update: vi.fn().mockImplementation((...args: unknown[]) => {
+            updateCallCount++;
+            if (updateCallCount === 1) return updateMock(...args);
+            return finalUpdateMock(...args);
+          }),
+          select: selectMock,
+        };
+      }
       if (table === "panel_issues") return { insert: insertMock };
       return { update: updateMock, select: selectMock, insert: insertMock };
     }),
