@@ -1,6 +1,6 @@
 {
   "name": "@consiliency/panel-react",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": false,
   "description": "React adapter for @consiliency/panel",
   "main": "./src/index.ts",
@@ -17,16 +17,9 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@assistant-ui/react": "^0.10.0",
     "@consiliency/panel-core": "workspace:*",
     "@consiliency/panel-types": "workspace:*",
-    "@floating-ui/react": "^0.26.0",
-    "browser-image-compression": "^2.0.2",
-    "modern-screenshot": "^4.4.0",
-    "perfect-freehand": "^1.2.2",
-    "react-dropzone": "^14.3.0",
-    "react-konva": "^19.2.3",
-    "react-speech-recognition": "^3.10.0"
+    "browser-image-compression": "^2.0.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
