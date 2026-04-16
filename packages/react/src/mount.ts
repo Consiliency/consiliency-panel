@@ -6,6 +6,9 @@ import type { Root } from "react-dom/client";
  * Returns an unmount function.
  */
 export function mountPanel(config: PanelConfig, container?: HTMLElement): () => void {
+  if (typeof document === "undefined") {
+    return () => {};
+  }
   // Dynamic import to keep this module tree-shakeable on server
   // All React/DOM work happens lazily
   let root: Root | null = null;
