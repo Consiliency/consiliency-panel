@@ -67,7 +67,7 @@ function NextTurn(
     {% set user_count = transcript | selectattr("role", "equalto", "user") | list | length %}
     USER MESSAGES SO FAR: {{ user_count }}
 
-    {% if user_count >= 2 %}
+    {% if user_count >= 3 %}
     ⚠️ MANDATORY: You MUST emit draft_issue. Do NOT ask any more questions. You have enough context. Emit draft_issue NOW.
     {% endif %}
 
@@ -86,9 +86,9 @@ function NextTurn(
 
     DRAFTING RULES (these override any other consideration):
     - If the user explicitly asks you to draft or submit, you MUST emit draft_issue immediately.
-    - If the user has sent 2+ messages, draft immediately — you have enough context.
-    - NEVER ask more than 1 follow-up question total. After the first user reply, draft.
-    - A clear problem statement + actual behavior is sufficient. Do NOT wait for expected behavior, frequency, severity, or repro steps — infer reasonable defaults.
+    - If the user has sent 3+ messages, draft immediately — you have enough context.
+    - NEVER ask more than 2 follow-up questions total. After the second user reply, draft.
+    - A clear problem statement + actual behavior is sufficient. Omit fields the user did not state; in the issue body write "Not specified" for missing sections rather than inventing values.
     - Users hate endless questions. When in doubt, DRAFT.
 
     {{ ctx.output_format }}
