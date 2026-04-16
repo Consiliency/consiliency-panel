@@ -61,14 +61,20 @@ function NextTurn(
     ENVIRONMENT:
     - URL: {{ metadata.url }}
     - Page title: {{ metadata.title }}
+    - Viewport: {{ metadata.viewport.width }}x{{ metadata.viewport.height }}
     - Screenshot attached: {{ "yes" if screenshot_url else "no" }}
+
+    {% set user_count = transcript | selectattr("role", "equalto", "user") | list | length %}
+    USER MESSAGES SO FAR: {{ user_count }}
+
+    {% if user_count >= 2 %}
+    ⚠️ MANDATORY: You MUST emit draft_issue. Do NOT ask any more questions. You have enough context. Emit draft_issue NOW.
+    {% endif %}
 
     CONVERSATION SO FAR:
     {% for t in transcript %}
     [{{ t.role }}] {{ t.content }}
     {% endfor %}
-
-    USER MESSAGES SO FAR: {{ transcript | selectattr("role", "equalto", "user") | list | length }}
 
     DECIDE what to do. Emit EXACTLY ONE tool call:
 

@@ -215,15 +215,17 @@ export async function POST(req: Request): Promise<Response> {
   const selectedModelId = betaEnabled ? body.selectedModelId ?? DEFAULT_MODEL_ID : DEFAULT_MODEL_ID;
   const clientName = resolveBamlClient(selectedModelId);
 
-  const bamlMetadata = {
-    ...body.metadata,
-    viewport:
-      typeof body.metadata?.viewport === "object"
-        ? `${body.metadata.viewport.width}x${body.metadata.viewport.height}`
-        : String(body.metadata?.viewport ?? ""),
-  };
+  const bamlMetadata = body.metadata;
 
   const turns = sanitizeTurns(body.transcript ?? []);
+
+  // Backstop: if the model has failed to draft after 3+ user messages, force a
+  // more capable model that reliably follows structured output instructions.
+  const userMessageCount = turns.filter(t => t.role === "user").length;
+  const effectiveClient = userMessageCount >= 3 ? "ClaudeHaiku" : clientName;
+  if (effectiveClient !== clientName) {
+    console.warn(`[next-turn] Backstop: upgrading from ${clientName} to ${effectiveClient} after ${userMessageCount} user turns`);
+  }
 
   let toolCall: ToolCall;
   try {
@@ -238,7 +240,7 @@ export async function POST(req: Request): Promise<Response> {
       appContext,
       body.screenshotUrl ?? null,
       updatedFacts.kind ?? null,
-      { client: clientName },
+      { client: effectiveClient },
     );
     toolCall = toToolCall(out as unknown as Parameters<typeof toToolCall>[0]);
   } catch (err) {

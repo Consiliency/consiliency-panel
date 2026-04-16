@@ -2,6 +2,7 @@ import { validateApiKey, unauthorized } from "@/lib/auth";
 import { getServiceSupabase } from "@/lib/supabase";
 import { getGitHubClient, parseRepo } from "@/lib/github";
 import { corsPreflight, withCors } from "@/lib/cors";
+import { BamlValidationError } from "@boundaryml/baml";
 import type { ConversationTurn, PanelSubmission, SubmissionMetadata } from "@consiliency/panel-types";
 
 export async function OPTIONS(req: Request) { return corsPreflight(req); }
@@ -38,11 +39,54 @@ export async function POST(
 
   const supabase = getServiceSupabase();
 
-  // Mark as processing
-  await supabase
+  // Atomically transition pending/failed → processing (idempotency guard)
+  const { data: updated } = await supabase
     .from("panel_submissions")
     .update({ status: "processing" })
-    .eq("id", id);
+    .eq("id", id)
+    .in("status", ["pending", "failed"])
+    .select("id")
+    .maybeSingle();
+
+  if (!updated) {
+    // Already processing or completed — check which
+    const { data: existing } = await supabase
+      .from("panel_submissions")
+      .select("status")
+      .eq("id", id)
+      .single();
+
+    if (existing?.status === "completed") {
+      // Return the existing issue as an SSE completed event
+      const { data: existingIssue } = await supabase
+        .from("panel_issues")
+        .select("github_issue_url, github_issue_number, plain_summary")
+        .eq("submission_id", id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (existingIssue) {
+        const enc = new TextEncoder();
+        const replayStream = new ReadableStream({
+          start(ctrl) {
+            ctrl.enqueue(enc.encode(sseEvent({
+              type: "completed",
+              message: "Issue already created",
+              issueUrl: existingIssue.github_issue_url,
+              issueNumber: existingIssue.github_issue_number,
+              plainSummary: existingIssue.plain_summary,
+            })));
+            ctrl.close();
+          },
+        });
+        return withCors(new Response(replayStream, {
+          headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" },
+        }), req);
+      }
+    }
+    return withCors(Response.json({ error: "Submission already being processed" }, { status: 409 }), req);
+  }
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -76,15 +120,7 @@ export async function POST(
         // Path: baml_client/ at repo root → 6 levels up from this route file
         const { b } = await import("baml_client");
 
-        const rawMeta = sub.metadata as SubmissionMetadata;
-        const bamlMetadata = {
-          ...rawMeta,
-          // BAML SubmissionMetadata.viewport is string; serialize the object
-          viewport:
-            typeof rawMeta.viewport === "object"
-              ? `${(rawMeta.viewport as any).width}x${(rawMeta.viewport as any).height}`
-              : String(rawMeta.viewport),
-        };
+        const bamlMetadata = sub.metadata as SubmissionMetadata;
 
         // ── Routing: decide target repo ──────────────────────────────────────────
         let targetRepo = body.repo;
@@ -182,7 +218,7 @@ export async function POST(
         }
 
         send({ type: "progress", message: "Formatting issue…" });
-        const issueOutput = await b.FormatAsGitHubIssue(issueInput, classification, enrichment, fixSuggestion) as {
+        type FormattedIssue = {
           github_title: string;
           github_body: string;
           labels: string[];
@@ -191,6 +227,18 @@ export async function POST(
           technical_details: string;
           priority: string;
         };
+        let issueOutput: FormattedIssue;
+        try {
+          issueOutput = await b.FormatAsGitHubIssue(issueInput, classification, enrichment, fixSuggestion) as FormattedIssue;
+        } catch (fmtErr) {
+          if (fmtErr instanceof BamlValidationError) {
+            console.warn("[process] FormatAsGitHubIssue failed, retrying with ClaudeSonnet:", (fmtErr as Error).message);
+            send({ type: "progress", message: "Retrying format with fallback model…" });
+            issueOutput = await b.FormatAsGitHubIssue(issueInput, classification, enrichment, fixSuggestion, { client: "ClaudeSonnet" }) as FormattedIssue;
+          } else {
+            throw fmtErr;
+          }
+        }
 
         // Create GitHub issue
         send({ type: "progress", message: "Creating GitHub issue…" });

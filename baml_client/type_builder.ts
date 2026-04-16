@@ -67,12 +67,14 @@ export default class TypeBuilder {
     
     ToolCallOut: ClassViewer<'ToolCallOut', "type" | "question" | "reason" | "options" | "redirect" | "draft">;
     
+    Viewport: ClassViewer<'Viewport', "width" | "height">;
+    
     
 
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueDraftIn","IssueDraftOut","IssueInput","IssueLabel","IssueOutput","KnownFactsInput","NavigationEntry","OnTopicResult","PreSubmitResult","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","RoutingDecision","SubmissionMetadata","ToolCallOut",
+            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueDraftIn","IssueDraftOut","IssueInput","IssueLabel","IssueOutput","KnownFactsInput","NavigationEntry","OnTopicResult","PreSubmitResult","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","RoutingDecision","SubmissionMetadata","ToolCallOut","Viewport",
           ]),
           enums: new Set([
             
@@ -158,6 +160,10 @@ export default class TypeBuilder {
         
         this.ToolCallOut = this.tb.classViewer("ToolCallOut", [
           "type","question","reason","options","redirect","draft",
+        ]);
+        
+        this.Viewport = this.tb.classViewer("Viewport", [
+          "width","height",
         ]);
         
         

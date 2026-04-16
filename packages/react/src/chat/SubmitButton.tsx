@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { usePanelContext } from "../PanelProvider";
 import type { ModeId, ProcessEvent, SubmissionPayload } from "@consiliency/panel-types";
 
@@ -23,9 +23,12 @@ const PHASE_LABELS: Record<SubmitPhase, string> = {
 export function SubmitButton({ modeId, onDone, componentHint, submissionEnhancer }: SubmitButtonProps) {
   const { sdk } = usePanelContext();
   const [phase, setPhase] = useState<SubmitPhase>("idle");
+  const inflightRef = useRef(false);
 
   const handleSubmit = async () => {
+    if (inflightRef.current) return;
     if (phase !== "idle" && phase !== "error") return;
+    inflightRef.current = true;
     setPhase("submitting");
 
     try {
@@ -71,6 +74,8 @@ export function SubmitButton({ modeId, onDone, componentHint, submissionEnhancer
       }, { repo: sdk.config.repo, panelRepo: sdk.config.panelRepo });
     } catch {
       setPhase("error");
+    } finally {
+      inflightRef.current = false;
     }
   };
 

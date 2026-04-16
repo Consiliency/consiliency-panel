@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueDraftIn,  IssueDraftOut,  IssueInput,  IssueLabel,  IssueOutput,  KnownFactsInput,  NavigationEntry,  OnTopicResult,  PreSubmitResult,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  RoutingDecision,  SubmissionMetadata,  ToolCallOut } from "./types"
+import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueDraftIn,  IssueDraftOut,  IssueInput,  IssueLabel,  IssueOutput,  KnownFactsInput,  NavigationEntry,  OnTopicResult,  PreSubmitResult,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  RoutingDecision,  SubmissionMetadata,  ToolCallOut,  Viewport } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -151,7 +151,7 @@ export namespace partial_types {
       url?: string | null
       title?: string | null
       userAgent?: string | null
-      viewport?: string | null
+      viewport?: Viewport | null
       timestamp?: string | null
     }
     export interface ToolCallOut {
@@ -161,5 +161,9 @@ export namespace partial_types {
       options?: string[] | null
       redirect?: string | null
       draft?: IssueDraftOut | null
+    }
+    export interface Viewport {
+      width?: number | null
+      height?: number | null
     }
 }

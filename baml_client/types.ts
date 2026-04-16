@@ -198,7 +198,7 @@ export interface SubmissionMetadata {
   url: string
   title: string
   userAgent: string
-  viewport: string
+  viewport: Viewport
   timestamp: string
   
 }
@@ -210,5 +210,11 @@ export interface ToolCallOut {
   options?: string[] | null
   redirect?: string | null
   draft?: IssueDraftOut | null
+  
+}
+
+export interface Viewport {
+  width: number
+  height: number
   
 }

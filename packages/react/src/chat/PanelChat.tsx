@@ -41,6 +41,7 @@ export function PanelChat({ modeId, componentHint, submissionEnhancer, renderInp
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const started = useRef(false);
+  const submitInflightRef = useRef(false);
 
   const syncFromSdk = () => {
     setTurns([...sdk.conversation.state.turns]);
@@ -160,7 +161,9 @@ export function PanelChat({ modeId, componentHint, submissionEnhancer, renderInp
   };
 
   const submitAgenticDraft = async (confirmBypass = false) => {
+    if (submitInflightRef.current) return;
     if (!draft) return;
+    submitInflightRef.current = true;
     setSubmitError(null);
     const metadata = sdk.metadata.collect();
     sdk.conversation.setMetadata(metadata);
@@ -193,18 +196,22 @@ export function PanelChat({ modeId, componentHint, submissionEnhancer, renderInp
     if (componentHint) payload.componentHint = componentHint;
     const finalPayload = submissionEnhancer ? submissionEnhancer(payload) : payload;
 
-    const { id } = await sdk.client.submit(finalPayload);
-    let pipelineError: string | null = null;
-    await sdk.client.streamProcess(id, (event: ProcessEvent) => {
-      if (event.type === "completed") {
-        sdk.conversation.markSubmitted(event.issueUrl, event.issueNumber);
-        setCompleted({ issueUrl: event.issueUrl ?? "", issueNumber: event.issueNumber });
-      } else if (event.type === "error") {
-        pipelineError = event.message ?? "Pipeline failed";
+    try {
+      const { id } = await sdk.client.submit(finalPayload);
+      let pipelineError: string | null = null;
+      await sdk.client.streamProcess(id, (event: ProcessEvent) => {
+        if (event.type === "completed") {
+          sdk.conversation.markSubmitted(event.issueUrl, event.issueNumber);
+          setCompleted({ issueUrl: event.issueUrl ?? "", issueNumber: event.issueNumber });
+        } else if (event.type === "error") {
+          pipelineError = event.message ?? "Pipeline failed";
+        }
+      }, { repo: sdk.config.repo, panelRepo: sdk.config.panelRepo });
+      if (pipelineError) {
+        throw new Error(pipelineError);
       }
-    }, { repo: sdk.config.repo, panelRepo: sdk.config.panelRepo });
-    if (pipelineError) {
-      throw new Error(pipelineError);
+    } finally {
+      submitInflightRef.current = false;
     }
   };
 

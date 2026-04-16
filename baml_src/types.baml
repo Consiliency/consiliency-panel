@@ -4,11 +4,16 @@ class ConversationTurn {
   timestamp string?
 }
 
+class Viewport {
+  width int
+  height int
+}
+
 class SubmissionMetadata {
   url string
   title string
   userAgent string
-  viewport string
+  viewport Viewport
   timestamp string
 }
 

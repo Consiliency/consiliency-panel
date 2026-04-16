@@ -49,7 +49,7 @@ export class PanelSDK {
   async init(): Promise<void> {
     // Resolve the GitHub login first if a resolver is provided and we don't
     // already have one statically — capabilities depend on it for tier lookup.
-    if (!this.resolvedGithubLogin && this.config.resolveGithubLogin) {
+    if (this.config.resolveGithubLogin) {
       try {
         const login = await this.config.resolveGithubLogin();
         if (login) {
