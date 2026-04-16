@@ -194,12 +194,18 @@ export function PanelChat({ modeId, componentHint, submissionEnhancer, renderInp
     const finalPayload = submissionEnhancer ? submissionEnhancer(payload) : payload;
 
     const { id } = await sdk.client.submit(finalPayload);
+    let pipelineError: string | null = null;
     await sdk.client.streamProcess(id, (event: ProcessEvent) => {
       if (event.type === "completed") {
         sdk.conversation.markSubmitted(event.issueUrl, event.issueNumber);
         setCompleted({ issueUrl: event.issueUrl ?? "", issueNumber: event.issueNumber });
+      } else if (event.type === "error") {
+        pipelineError = event.message ?? "Pipeline failed";
       }
     }, { repo: sdk.config.repo, panelRepo: sdk.config.panelRepo });
+    if (pipelineError) {
+      throw new Error(pipelineError);
+    }
   };
 
   const requestDraftChanges = async (text: string) => {
