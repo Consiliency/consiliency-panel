@@ -22,7 +22,7 @@ export function corsHeaders(req: Request): Record<string, string> {
   if (!allowed) return {};
   return {
     "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, x-github-login",
     "Access-Control-Max-Age": "86400",
     ...(allowed !== "*" ? { Vary: "Origin" } : {}),
