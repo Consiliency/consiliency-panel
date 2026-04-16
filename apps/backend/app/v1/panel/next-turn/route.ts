@@ -129,7 +129,7 @@ export async function POST(req: Request): Promise<Response> {
   const appContext = buildAppContext(body.repo, body.panelRepo);
 
   // Off-topic short-circuit — skip for follow-up turns (first message was already validated).
-  const userTurnCount = (body.turns ?? []).filter((t: { role: string }) => t.role === "user").length;
+  const userTurnCount = (body.transcript ?? []).filter((t: { role: string }) => t.role === "user").length;
   if (userTurnCount < 1) {
     const topic = await checkTopic(userText, appContext);
     if (!topic.onTopic) {
