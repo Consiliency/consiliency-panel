@@ -131,6 +131,19 @@ describe("PanelApiClient", () => {
       expect(body.repo).toBe("");
     });
 
+    it("flushes final event from buffer when stream ends without trailing newline", async () => {
+      const body = `data: ${JSON.stringify({ type: "progress", message: "Working…" })}\n\ndata: ${JSON.stringify({ type: "completed", issueUrl: "https://github.com/issues/99", issueNumber: 99 })}`;
+      fetchSpy.mockResolvedValueOnce(new Response(body, {
+        status: 200,
+        headers: { "content-type": "text/event-stream" },
+      }));
+
+      const events: Array<{ type: string }> = [];
+      await client.streamProcess("sub-xyz", (e) => events.push(e), { repo: "Owner/repo" });
+
+      expect(events.map((e) => e.type)).toEqual(["progress", "completed"]);
+    });
+
     it("throws on non-ok response", async () => {
       fetchSpy.mockResolvedValueOnce(new Response("{}", { status: 500 }));
       await expect(client.streamProcess("sub-xyz", () => {})).rejects.toThrow("Process stream failed: 500");

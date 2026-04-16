@@ -1,17 +1,19 @@
 import type { PanelModelOption } from "@consiliency/panel-types";
 
 export const PANEL_MODELS: PanelModelOption[] = [
-  { id: "gpt-5-nano", label: "GPT-5 Nano", provider: "OpenAI" },
+  { id: "gpt-4.1-nano", label: "GPT-4.1 Nano", provider: "OpenAI" },
+  { id: "gpt-5-nano", label: "GPT-5 Nano (reasoning)", provider: "OpenAI" },
   { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", provider: "Anthropic" },
   { id: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite", provider: "Google / OpenRouter" },
   { id: "gemma-3-27b", label: "Gemma 3 27B", provider: "Google / OpenRouter" },
   { id: "kimi-vl", label: "Kimi-VL", provider: "Moonshot / OpenRouter" },
 ];
 
-export const DEFAULT_MODEL_ID = "gpt-5-nano";
+export const DEFAULT_MODEL_ID = "gpt-4.1-nano";
 
 const MODEL_TO_BAML_CLIENT: Record<string, string> = {
-  "gpt-5-nano": "OpenAINano",
+  "gpt-4.1-nano": "OpenAINano",
+  "gpt-5-nano": "OpenAINanoReasoning",
   "claude-haiku-4-5": "ClaudeHaiku",
   "gemini-3.1-flash-lite": "GeminiFlashLite",
   "gemma-3-27b": "Gemma3",

@@ -128,20 +128,23 @@ export async function POST(req: Request): Promise<Response> {
   const supabase = getServiceSupabase();
   const appContext = buildAppContext(body.repo, body.panelRepo);
 
-  // Off-topic short-circuit — never starts a submission row if the user is off scope.
-  const topic = await checkTopic(userText, appContext);
-  if (!topic.onTopic) {
-    const redirect =
-      topic.redirectHint ??
-      "I can only help with feedback about this app — is there something about it you want to report?";
-    return withCors(
-      Response.json({
-        submissionId: body.submissionId ?? null,
-        toolCall: { type: "refuse_off_topic", redirect } as ToolCall,
-        knownFacts: {},
-      } satisfies Partial<NextTurnResponse> as NextTurnResponse),
-      req,
-    );
+  // Off-topic short-circuit — skip for follow-up turns (first message was already validated).
+  const userTurnCount = (body.turns ?? []).filter((t: { role: string }) => t.role === "user").length;
+  if (userTurnCount < 1) {
+    const topic = await checkTopic(userText, appContext);
+    if (!topic.onTopic) {
+      const redirect =
+        topic.redirectHint ??
+        "I can only help with feedback about this app — is there something about it you want to report?";
+      return withCors(
+        Response.json({
+          submissionId: body.submissionId ?? null,
+          toolCall: { type: "refuse_off_topic", redirect } as ToolCall,
+          knownFacts: {},
+        } satisfies Partial<NextTurnResponse> as NextTurnResponse),
+        req,
+      );
+    }
   }
 
   // Resolve/create the submission row lazily (agentic flow)

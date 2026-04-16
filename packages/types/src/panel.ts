@@ -273,6 +273,8 @@ export interface ProcessEvent {
   message?: string;
   issueUrl?: string;
   issueNumber?: number;
+  title?: string;
+  plainSummary?: string;
   /** Emitted on routing events: which repo was chosen and why */
   target?: "app" | "panel";
   targetRepo?: string;

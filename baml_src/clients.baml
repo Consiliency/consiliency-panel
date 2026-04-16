@@ -4,14 +4,27 @@ generator lang_ts {
   version "0.220.0"
 }
 
-// Classification + routing + cheap structured output
-// Default: gpt-5-nano
+// Classification + routing + cheap structured output (non-reasoning models)
+// Default: gpt-4.1-nano
 // Override via: BAML_MODEL_CLASSIFY=<model-id>
 client<llm> OpenAINano {
   provider openai
   options {
     model env.BAML_MODEL_CLASSIFY
     max_tokens 1024
+    api_key env.OPENAI_API_KEY
+  }
+}
+
+// Reasoning-model variant (gpt-5-nano, o3-mini, etc.)
+// Reasoning models reject max_tokens; use max_completion_tokens instead.
+// Override via: BAML_MODEL_AGENT_NANO_REASONING=<model-id>
+client<llm> OpenAINanoReasoning {
+  provider openai
+  options {
+    model env.BAML_MODEL_AGENT_NANO_REASONING
+    max_tokens null
+    max_completion_tokens 1024
     api_key env.OPENAI_API_KEY
   }
 }

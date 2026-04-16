@@ -217,5 +217,19 @@ export class PanelApiClient {
         }
       }
     }
+
+    // Flush any remaining buffered data (e.g. final "completed" event)
+    if (buffer.trim()) {
+      for (const line of buffer.split("\n")) {
+        if (line.startsWith("data: ")) {
+          try {
+            const event = JSON.parse(line.slice(6)) as ProcessEvent;
+            onEvent(event);
+          } catch {
+            // ignore malformed SSE lines
+          }
+        }
+      }
+    }
   }
 }
