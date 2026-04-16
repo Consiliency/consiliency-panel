@@ -14,16 +14,18 @@ export function ScreenshotCapture({ onCaptured }: ScreenshotCaptureProps) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [pendingPanelBlob, setPendingPanelBlob] = useState<Blob | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCapture = async () => {
     setCapturing(true);
+    setError(null);
     try {
       const { page, panel } = await captureScreenshot({ panelEl: panelElementRef?.current ?? null });
       setPendingPanelBlob(panel ?? null);
       const url = await blobToDataUrl(page);
       setDataUrl(url);
     } catch {
-      // Capture failed — skip silently
+      setError("Screenshot capture failed");
     } finally {
       setCapturing(false);
     }
@@ -31,6 +33,7 @@ export function ScreenshotCapture({ onCaptured }: ScreenshotCaptureProps) {
 
   const handleAnnotationDone = async (blob: Blob) => {
     setDataUrl(null);
+    setError(null);
     const ts = Date.now();
     const pageName = `screenshot-page-${ts}.png`;
     try {
@@ -53,7 +56,7 @@ export function ScreenshotCapture({ onCaptured }: ScreenshotCaptureProps) {
         }
       }
     } catch {
-      // Upload failed
+      setError("Upload failed");
     } finally {
       setPendingPanelBlob(null);
     }
@@ -67,6 +70,12 @@ export function ScreenshotCapture({ onCaptured }: ScreenshotCaptureProps) {
           onDone={handleAnnotationDone}
           onCancel={() => setDataUrl(null)}
         />
+      )}
+      {error && (
+        <div className="panel-capture-error" role="alert">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} aria-label="Dismiss">×</button>
+        </div>
       )}
       {thumbnail ? (
         <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 0 8px" }}>

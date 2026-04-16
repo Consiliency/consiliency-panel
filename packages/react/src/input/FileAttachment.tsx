@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { usePanelContext } from "../PanelProvider";
 
 interface FileAttachmentProps {
@@ -11,17 +11,26 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 export function FileAttachment({ onUploaded }: FileAttachmentProps) {
   const { sdk } = usePanelContext();
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(null), 4000);
+    return () => clearTimeout(t);
+  }, [error]);
 
   const handleChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > MAX_FILE_SIZE) {
-      // Silently ignore oversized files — UI should show an error ideally
+      setError("File too large (max 10 MB)");
+      e.target.value = "";
       return;
     }
 
     setUploading(true);
+    setError(null);
     try {
       let blob: Blob = file;
 
@@ -40,7 +49,7 @@ export function FileAttachment({ onUploaded }: FileAttachmentProps) {
       sdk.conversation.addAttachment({ url, type: "file", name: file.name });
       onUploaded(url, file.name);
     } catch {
-      // Upload failed — silently ignore for now
+      setError("Upload failed");
     } finally {
       setUploading(false);
       // Reset input so same file can be re-selected
@@ -49,25 +58,28 @@ export function FileAttachment({ onUploaded }: FileAttachmentProps) {
   }, [sdk, onUploaded]);
 
   return (
-    <label
-      className={`panel-attach-btn${uploading ? "" : ""}`}
-      aria-label="Attach file"
-      style={{ cursor: uploading ? "not-allowed" : "pointer" }}
-    >
-      {uploading ? (
-        <span className="panel-spinner" />
-      ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-        </svg>
-      )}
-      <input
-        type="file"
-        accept="image/*,.pdf,.txt,.md"
-        style={{ display: "none" }}
-        onChange={handleChange}
-        disabled={uploading}
-      />
-    </label>
+    <>
+      <label
+        className={`panel-attach-btn${uploading ? "" : ""}`}
+        aria-label="Attach file"
+        style={{ cursor: uploading ? "not-allowed" : "pointer" }}
+      >
+        {uploading ? (
+          <span className="panel-spinner" />
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+        )}
+        <input
+          type="file"
+          accept="image/*,.pdf,.txt,.md"
+          style={{ display: "none" }}
+          onChange={handleChange}
+          disabled={uploading}
+        />
+      </label>
+      {error && <span className="panel-attach-error" role="alert">{error}</span>}
+    </>
   );
 }

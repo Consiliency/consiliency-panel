@@ -148,6 +148,19 @@ describe("PanelApiClient", () => {
       fetchSpy.mockResolvedValueOnce(new Response("{}", { status: 500 }));
       await expect(client.streamProcess("sub-xyz", () => {})).rejects.toThrow("Process stream failed: 500");
     });
+
+    it("emits error events from SSE stream", async () => {
+      fetchSpy.mockResolvedValueOnce(makeSseResponse([
+        { type: "progress", message: "Classifying…" },
+        { type: "error", message: "Pipeline failed" },
+      ]));
+
+      const events: Array<{ type: string; message?: string }> = [];
+      await client.streamProcess("sub-xyz", (e) => events.push(e), { repo: "Owner/repo" });
+
+      expect(events.map((e) => e.type)).toEqual(["progress", "error"]);
+      expect(events[1]?.message).toBe("Pipeline failed");
+    });
   });
 
   describe("githubLogin headers", () => {

@@ -487,3 +487,25 @@
   font-size: 12px;
   color: var(--panel-fg);
 }
+
+.panel-capture-error,
+.panel-attach-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ef4444;
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.panel-capture-error button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0.7;
+}
+.panel-capture-error button:hover { opacity: 1; }
