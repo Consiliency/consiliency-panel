@@ -68,15 +68,22 @@ function NextTurn(
     [{{ t.role }}] {{ t.content }}
     {% endfor %}
 
+    USER MESSAGES SO FAR: {{ transcript | selectattr("role", "equalto", "user") | list | length }}
+
     DECIDE what to do. Emit EXACTLY ONE tool call:
 
-    1. ask_follow_up — the most important fact is still missing and you need to ask the user a SPECIFIC, SHORT question (under 20 words) that could not be answered by rereading the transcript. Include `reason` as a brief internal justification.
+    1. ask_follow_up — the most important fact is still missing and you need to ask the user a SPECIFIC, SHORT question (under 20 words) that could not be answered by rereading the transcript. Include `reason` as a brief internal justification. NEVER ask a question the user already answered.
     2. clarify_intent — the user's intent (bug vs feature vs feedback vs other) is ambiguous and classification would change the issue substantially. Provide `options` such as ["bug","feature","feedback","other"].
     3. refuse_off_topic — the user asked something outside scope. Provide a short `redirect`.
     4. draft_issue — you have enough facts to draft a real issue. Populate `draft` with title, body (markdown including Actual/Expected/Steps sections), severity, and kind. Use only facts from the transcript.
     5. revise_draft — only valid if the last user turn explicitly asks to change a prior draft. Produce the revised draft.
 
-    Prefer `draft_issue` as soon as you have a clear problem statement + actual behavior. Do NOT keep asking if you already have enough to write a meaningful issue — users hate endless questions.
+    DRAFTING RULES (these override any other consideration):
+    - If the user explicitly asks you to draft or submit, you MUST emit draft_issue immediately.
+    - If the user has sent 2+ messages, draft immediately — you have enough context.
+    - NEVER ask more than 1 follow-up question total. After the first user reply, draft.
+    - A clear problem statement + actual behavior is sufficient. Do NOT wait for expected behavior, frequency, severity, or repro steps — infer reasonable defaults.
+    - Users hate endless questions. When in doubt, DRAFT.
 
     {{ ctx.output_format }}
   "#
