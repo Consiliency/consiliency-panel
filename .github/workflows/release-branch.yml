@@ -94,3 +94,15 @@ jobs:
           git add -A
           git commit -m "release: build artifact for ${SRC_COMMIT}"
           git push --force origin release
+
+      - name: Notify embedders
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.EMBEDDER_DISPATCH_TOKEN }}
+          repository: Consiliency/consiliency-portal
+          event-type: panel-release
+          client-payload: |
+            {
+              "source_commit": "${{ github.sha }}",
+              "released_at": "${{ github.event.head_commit.timestamp }}"
+            }
