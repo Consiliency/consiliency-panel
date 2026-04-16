@@ -2,12 +2,15 @@ import { validateApiKey, unauthorized } from "@/lib/auth";
 import { getServiceSupabase } from "@/lib/supabase";
 import { getGitHubClient } from "@/lib/github";
 import { corsPreflight, withCors } from "@/lib/cors";
+import { isRateLimited, tooManyRequests } from "@/lib/ratelimit";
 
 export async function OPTIONS(req: Request) { return corsPreflight(req); }
 
 export async function POST(req: Request): Promise<Response> {
   const key = await validateApiKey(req);
   if (!key) return withCors(unauthorized(), req);
+
+  if (await isRateLimited(key.productKey)) return withCors(tooManyRequests(), req);
 
   const { submissionId, body: commentBody } = (await req.json()) as {
     submissionId: string;
