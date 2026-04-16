@@ -23,8 +23,7 @@ client<llm> OpenAINanoReasoning {
   provider openai
   options {
     model env.BAML_MODEL_AGENT_NANO_REASONING
-    max_tokens null
-    max_completion_tokens 1024
+    max_completion_tokens 4096
     api_key env.OPENAI_API_KEY
   }
 }
