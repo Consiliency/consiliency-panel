@@ -170,6 +170,16 @@ threads these markers into backend process events and issue formatting. For the
 exact body sections, label families, marker keys, metadata budget, and
 user-approval/redaction rules, see [`docs/embedder-contract.md`](docs/embedder-contract.md).
 
+`PANELPROOF` is the acceptance-proof packet for this handoff path. Use
+[`docs/panelproof-acceptance.md`](docs/panelproof-acceptance.md) as the source
+of truth for proof commands, environment and commit capture, rollback, downstream
+Portal linkage expectations, Governed Pipeline consume-or-defer status, and the
+next adoption step.
+
+Proof artifacts stay redacted. Do not record raw API keys, GitHub tokens, full
+transcripts, raw screenshot payloads, raw console dumps, or secret environment
+values in release notes or handoff evidence.
+
 ## Repo Routing (`panelRepo`)
 
 Use `panelRepo` if you want panel-widget bugs routed separately from host-app issues. Full routing behavior and screenshot naming requirements are documented in [`docs/embedder-contract.md`](docs/embedder-contract.md).

@@ -100,7 +100,7 @@ describe("PanelApiClient", () => {
       expect(events.map((e) => e.type)).toEqual(["progress", "completed"]);
     });
 
-    it("forwards pipeline_handoff events unchanged", async () => {
+    it("proves the acceptance path preserves routing, pipeline_handoff, and completed events", async () => {
       fetchSpy.mockResolvedValueOnce(makeSseResponse([
         {
           type: "pipeline_handoff",
@@ -121,12 +121,22 @@ describe("PanelApiClient", () => {
         repo: "Owner/repo",
       });
 
+      expect(events.map((event) => event.type)).toEqual([
+        "pipeline_handoff",
+        "completed",
+      ]);
       expect(events[0]).toMatchObject({
         type: "pipeline_handoff",
         target: "app",
         routingTarget: "host_app",
+        targetRepo: "Owner/repo",
         handoffStatus: "candidate",
         pipelineHint: "core workflow blocker",
+      });
+      expect(events[1]).toMatchObject({
+        type: "completed",
+        issueUrl: "https://github.com/issues/1",
+        issueNumber: 1,
       });
     });
 

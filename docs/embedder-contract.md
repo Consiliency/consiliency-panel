@@ -208,6 +208,26 @@ below.
 - Secret-bearing values must be redacted or excluded before any external write.
 - Every downstream write still requires explicit user approval before the issue body or intake hint is emitted.
 
+## Acceptance proof packet
+
+`docs/panelproof-acceptance.md` is the release and handoff packet for the
+Panel-owned acceptance proof. It records the proof commands, environment and
+commit capture, exact GitHub issue artifact shape, rollback, Portal linkage
+expectation, Governed Pipeline consume-or-defer status, and the next adoption
+step for downstream repos.
+
+Treat that packet as the source of truth when collecting evidence for
+`PANELPROOF`. The acceptable artifact boundary stays narrow:
+
+- no raw API keys or GitHub tokens
+- no full transcripts
+- no raw screenshot payloads
+- no raw console dumps
+- no secret environment values
+
+Only bounded issue metadata, labels, tracking markers, safe excerpts, and links
+belong in acceptance evidence.
+
 ## Screenshot naming convention
 
 If you use the built-in screenshot flow, the React client already emits the correct names.

@@ -307,7 +307,7 @@ describe("POST /v1/panel/process/[id]", () => {
     expect(res.status).toBe(401);
   });
 
-  it("emits routing, pipeline_handoff, and completed for candidate issues", async () => {
+  it("proves the Panel-owned acceptance artifact for candidate handoff paths", async () => {
     const supabase = makeSupabaseMock();
     vi.mocked(supabaseLib.getServiceSupabase).mockReturnValue(supabase.client);
     vi.mocked(githubLib.parseRepo).mockImplementation((repo: string) => {
@@ -363,8 +363,27 @@ describe("POST /v1/panel/process/[id]", () => {
     expect(createCall.owner).toBe("Owner");
     expect(createCall.repo).toBe("app-repo");
     expect(createCall.body).toContain("## Summary");
+    expect(createCall.body).toContain(MOCK_ISSUE_OUTPUT.issue_sections.summary);
+    expect(createCall.body).toContain("## User-approved details");
+    expect(createCall.body).toContain(MOCK_ISSUE_OUTPUT.issue_sections.user_approved_details);
+    expect(createCall.body).toContain("## Environment");
+    expect(createCall.body).toContain(MOCK_ISSUE_OUTPUT.issue_sections.environment);
+    expect(createCall.body).toContain("## Routing");
+    expect(createCall.body).toContain(MOCK_ISSUE_OUTPUT.issue_sections.routing);
     expect(createCall.body).toContain("## Pipeline intake handoff");
+    expect(createCall.body).toContain(MOCK_ISSUE_OUTPUT.issue_sections.pipeline_intake_handoff);
+    expect(createCall.body).toContain("## Linked evidence");
+    expect(createCall.body).toContain(MOCK_ISSUE_OUTPUT.issue_sections.linked_evidence);
     expect(createCall.body).toContain("Tracking markers:");
+    expect(createCall.body).toContain("- `panel_source`: panel");
+    expect(createCall.body).toContain("- `panel_submission_id`: sub-abc");
+    expect(createCall.body).toContain("- `panel_product_key`: test");
+    expect(createCall.body).toContain("- `panel_target`: host_app");
+    expect(createCall.body).toContain("- `panel_repo_decision`: app");
+    expect(createCall.body).toContain("- `panel_intake_candidate`: candidate");
+    expect(createCall.body).toContain("- `panel_screenshot_kinds`: page");
+    expect(createCall.body).toContain("- `panel_summary_ref`: dashboard-submit");
+    expect(createCall.body).toContain("- `panel_pipeline_hint`: core workflow blocker");
     expect(createCall.labels).toEqual(expect.arrayContaining([
       "source:panel",
       "target:host_app",
@@ -387,85 +406,25 @@ describe("POST /v1/panel/process/[id]", () => {
     ).toMatchObject({
       page_url: "https://example.com/dashboard",
       page_title: "Dashboard",
+      submission_timestamp: "2026-01-01T00:00:00Z",
       github_login: "alice",
       selected_model_id: "claude-sonnet",
       component_hint: "src/components/SubmitButton.tsx",
       screenshot_kinds: ["page"],
+      navigation_summary: "Home (https://example.com) -> Dashboard (https://example.com/dashboard)",
+      context_summary: "Dashboard submission is blocked for authenticated users.",
     });
+    expect(
+      persistedIssue.technical_details.pipelineHandoff.forwardableMetadata,
+    ).not.toHaveProperty("transcript");
+    expect(
+      persistedIssue.technical_details.pipelineHandoff.forwardableMetadata,
+    ).not.toHaveProperty("console_errors");
     expect(persistedIssue.technical_details.issueMarkers.panel_submission_id).toBe("sub-abc");
     expect(persistedIssue.labels).toEqual(createCall.labels);
   });
 
-  it("preserves panelRepo routing and passes screenshot hints to RouteToRepo", async () => {
-    const submissionWithScreenshots = {
-      ...MOCK_SUBMISSION,
-      attachment_urls: [
-        {
-          url: "https://storage.example.com/page.png",
-          type: "screenshot",
-          name: "screenshot-page-1735689600000.png",
-        },
-        {
-          url: "https://storage.example.com/panel.png",
-          type: "screenshot",
-          name: "screenshot-panel-1735689601000.png",
-        },
-        {
-          url: "https://storage.example.com/file.pdf",
-          type: "file",
-          name: "report.pdf",
-        },
-      ],
-    };
-    const supabase = makeSupabaseMock({ submission: submissionWithScreenshots });
-    vi.mocked(supabaseLib.getServiceSupabase).mockReturnValue(supabase.client);
-    vi.mocked(githubLib.parseRepo).mockImplementation((repo: string) => {
-      const [owner, name] = repo.split("/");
-      return { owner, repo: name };
-    });
-    const gh = makeGitHubMock(7);
-    vi.mocked(githubLib.getGitHubClient).mockReturnValue(gh as never);
-
-    const b = await setupBamlMocks({
-      issue_sections: {
-        ...MOCK_ISSUE_OUTPUT.issue_sections,
-        routing: "This issue belongs in the panel widget repository.",
-      },
-      issue_markers: {
-        ...MOCK_ISSUE_OUTPUT.issue_markers,
-        panel_target: "panel_widget",
-        panel_repo_decision: "panel",
-      },
-    });
-    vi.mocked(b.RouteToRepo).mockResolvedValue({
-      target: "panel",
-      reasoning: "Widget UI bug",
-      confidence: "high",
-    });
-
-    const res = await POST(
-      makeRequest("sub-abc", { repo: APP_REPO, panelRepo: PANEL_REPO }),
-      { params: Promise.resolve({ id: "sub-abc" }) },
-    );
-
-    const events = await parseSSE(res);
-    const routingEvent = events.find((event) => event.type === "routing");
-    expect(routingEvent).toMatchObject({
-      target: "panel",
-      routingTarget: "panel_widget",
-      targetRepo: PANEL_REPO,
-    });
-
-    const createCall = gh.createMock.mock.calls[0][0] as { owner: string; repo: string };
-    expect(createCall.owner).toBe("Consiliency");
-    expect(createCall.repo).toBe("consiliency-panel");
-
-    expect(vi.mocked(b.RouteToRepo)).toHaveBeenCalledOnce();
-    const [, , screenshotKinds] = vi.mocked(b.RouteToRepo).mock.calls[0];
-    expect(screenshotKinds).toEqual(["page", "panel"]);
-  });
-
-  it("persists deferred handoff metadata without emitting pipeline_handoff", async () => {
+  it("persists the deferred acceptance artifact without emitting pipeline_handoff", async () => {
     const supabase = makeSupabaseMock();
     vi.mocked(supabaseLib.getServiceSupabase).mockReturnValue(supabase.client);
     vi.mocked(githubLib.parseRepo).mockImplementation((repo: string) => {
@@ -504,6 +463,13 @@ describe("POST /v1/panel/process/[id]", () => {
     };
     expect(persistedIssue.technical_details.pipelineHandoff.status).toBe("deferred");
     expect(persistedIssue.technical_details.issueMarkers.panel_intake_candidate).toBe("deferred");
+    expect(persistedIssue.technical_details.pipelineHandoff.pipelineHint).toBe(
+      "Needs human triage first",
+    );
+    expect(persistedIssue.technical_details.pipelineHandoff.forwardableMetadata).toMatchObject({
+      page_url: "https://example.com/dashboard",
+      page_title: "Dashboard",
+    });
   });
 
   it("replays stored candidate handoff metadata for completed submissions", async () => {
@@ -580,5 +546,74 @@ describe("POST /v1/panel/process/[id]", () => {
 
     expect(vi.mocked(b.ClassifyIssue)).not.toHaveBeenCalled();
     expect(gh.createMock).not.toHaveBeenCalled();
+  });
+
+  it("preserves panelRepo routing and passes screenshot hints to RouteToRepo", async () => {
+    const submissionWithScreenshots = {
+      ...MOCK_SUBMISSION,
+      attachment_urls: [
+        {
+          url: "https://storage.example.com/page.png",
+          type: "screenshot",
+          name: "screenshot-page-1735689600000.png",
+        },
+        {
+          url: "https://storage.example.com/panel.png",
+          type: "screenshot",
+          name: "screenshot-panel-1735689601000.png",
+        },
+        {
+          url: "https://storage.example.com/file.pdf",
+          type: "file",
+          name: "report.pdf",
+        },
+      ],
+    };
+    const supabase = makeSupabaseMock({ submission: submissionWithScreenshots });
+    vi.mocked(supabaseLib.getServiceSupabase).mockReturnValue(supabase.client);
+    vi.mocked(githubLib.parseRepo).mockImplementation((repo: string) => {
+      const [owner, name] = repo.split("/");
+      return { owner, repo: name };
+    });
+    const gh = makeGitHubMock(7);
+    vi.mocked(githubLib.getGitHubClient).mockReturnValue(gh as never);
+
+    const b = await setupBamlMocks({
+      issue_sections: {
+        ...MOCK_ISSUE_OUTPUT.issue_sections,
+        routing: "This issue belongs in the panel widget repository.",
+      },
+      issue_markers: {
+        ...MOCK_ISSUE_OUTPUT.issue_markers,
+        panel_target: "panel_widget",
+        panel_repo_decision: "panel",
+      },
+    });
+    vi.mocked(b.RouteToRepo).mockResolvedValue({
+      target: "panel",
+      reasoning: "Widget UI bug",
+      confidence: "high",
+    });
+
+    const res = await POST(
+      makeRequest("sub-abc", { repo: APP_REPO, panelRepo: PANEL_REPO }),
+      { params: Promise.resolve({ id: "sub-abc" }) },
+    );
+
+    const events = await parseSSE(res);
+    const routingEvent = events.find((event) => event.type === "routing");
+    expect(routingEvent).toMatchObject({
+      target: "panel",
+      routingTarget: "panel_widget",
+      targetRepo: PANEL_REPO,
+    });
+
+    const createCall = gh.createMock.mock.calls[0][0] as { owner: string; repo: string };
+    expect(createCall.owner).toBe("Consiliency");
+    expect(createCall.repo).toBe("consiliency-panel");
+
+    expect(vi.mocked(b.RouteToRepo)).toHaveBeenCalledOnce();
+    const [, , screenshotKinds] = vi.mocked(b.RouteToRepo).mock.calls[0];
+    expect(screenshotKinds).toEqual(["page", "panel"]);
   });
 });
