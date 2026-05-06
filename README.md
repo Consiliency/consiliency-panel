@@ -58,6 +58,12 @@ mountPanel({
 });
 ```
 
+`NEXT_PUBLIC_PANEL_API_KEY` is a Portal-issued embed credential. It is
+intentionally public in browser code, but the backend limits it to the key's
+`product_key`, `max_tier`, `active` state, optional expiry, and origin
+allowlisting. Do not treat it like a service credential or put service-role
+secrets in client config.
+
 Or use the React provider directly:
 
 ```tsx
@@ -141,13 +147,15 @@ Turn the picker off in production via embedder config (`betaModelSelection: fals
 
 ## Admin Setup
 
-1. **Create an API key** — navigate to `/admin/api-keys` in the portal. Copy the raw key once (it is not stored).
-2. **Grant roles** — navigate to `/admin/roles` to assign `guest`, `contractor`, or `team` tier to GitHub logins.
-3. Set `NEXT_PUBLIC_PANEL_API_URL` and `NEXT_PUBLIC_PANEL_API_KEY` in your app's environment.
+1. **Create an API key** — navigate to `/admin/api-keys` in the portal. Issue a product-scoped embed key and copy the raw key once; Portal does not store the raw value.
+2. **Grant roles** — navigate to `/admin/roles` to assign `guest`, `contractor`, or `team` tier to GitHub logins for the relevant product.
+3. **Coordinate origins** — set the production/staging origins in `PANEL_ALLOWED_ORIGINS` on the panel backend before rollout.
+4. **Configure the embed** — set `NEXT_PUBLIC_PANEL_API_URL` and `NEXT_PUBLIC_PANEL_API_KEY` in your app's environment.
+5. **Lifecycle operations stay in Portal** — Portal owns rotation, disablement, replacement, and one-time raw-key copy for embedder credentials.
 
 ## Embedder Contract
 
-For the full embedding reference — including required config, `panelRepo` routing, screenshot naming, CORS allowlisting, and init-failure diagnosis — see [`docs/embedder-contract.md`](docs/embedder-contract.md).
+For the full embedding reference — including required config, public embed-key posture, `panelRepo` routing, screenshot naming, CORS allowlisting, and init-failure diagnosis — see [`docs/embedder-contract.md`](docs/embedder-contract.md).
 
 ## Feedback-to-pipeline intake
 
@@ -168,7 +176,7 @@ Use `panelRepo` if you want panel-widget bugs routed separately from host-app is
 
 ## CORS Configuration (`PANEL_ALLOWED_ORIGINS`)
 
-For production deploys, set `PANEL_ALLOWED_ORIGINS` explicitly. Configuration details and failure modes are documented in [`docs/embedder-contract.md`](docs/embedder-contract.md).
+For production deploys, set `PANEL_ALLOWED_ORIGINS` explicitly. Leaving it unset is only a local-dev fallback that reflects request origins. Configuration details and failure modes are documented in [`docs/embedder-contract.md`](docs/embedder-contract.md).
 
 ## Diagnosing Init Failures
 

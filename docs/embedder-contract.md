@@ -43,7 +43,7 @@ Or with the React provider:
 | Field | Required | Description |
 |---|---|---|
 | `apiUrl` | Yes | Public backend base URL |
-| `apiKey` | Yes | Panel API key issued by the admin portal |
+| `apiKey` | Yes | Portal-issued panel embed credential; intentionally public in browser code and scope-limited by the backend |
 | `repo` | Yes | Default GitHub repo for host-app issues |
 | `panelRepo` | Optional | Separate GitHub repo for panel-widget issues |
 | `betaModelSelection` | Optional | Show in-panel model picker (beta). Defaults to backend response; set `false` to hide in production |
@@ -62,7 +62,7 @@ Or with the React provider:
 | `GITHUB_TOKEN_CONTRACTOR` | Yes | Read-only token (+ file tree) |
 | `GITHUB_TOKEN_TEAM` | Yes | Read token (+ blame, PRs, CI) |
 | `NEXT_PUBLIC_PANEL_API_URL` | Yes | Public API URL consumed by the embed |
-| `PANEL_ALLOWED_ORIGINS` | Optional | Comma-separated allowed origins; defaults to allow-all |
+| `PANEL_ALLOWED_ORIGINS` | Optional | Comma-separated allowed origins; leave unset only for local-dev fallback that reflects request origins |
 | `UPSTASH_REDIS_REST_URL` | Optional | Rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limiting |
 | `PANEL_BETA_MODEL_SELECTION` | Optional | Server-side kill switch for the beta model picker (default `true`) |
@@ -72,6 +72,26 @@ Or with the React provider:
 | `BAML_MODEL_AGENT_GEMINI` | Optional | Override Gemini Flash-Lite model ID |
 | `BAML_MODEL_AGENT_KIMI_VL` | Optional | Override Kimi-VL model ID |
 | `BAML_MODEL_TOPIC_CHECK` | Optional | Override topic-check model ID (always cheapest Nano) |
+
+## Embed credential posture
+
+`NEXT_PUBLIC_PANEL_API_KEY` is intentionally public in the browser. It is an
+embed credential, not a service secret. Portal issues the raw key once, the
+embedder places it in client configuration, and the backend constrains what the
+key can do.
+
+The backend treats the bearer key as scope-limited to:
+
+- `product_key`
+- `max_tier`
+- `active`
+- optional `expires_at`
+- origin allowlisting via `PANEL_ALLOWED_ORIGINS`
+
+This means a leaked embed key can authorize only the panel capability and panel
+route surfaces already guarded by that key's product and tier scope. It does
+not grant Supabase service-role access, GitHub tokens, model-provider secrets,
+or Portal admin authority.
 
 ## Agentic feedback flow (beta)
 
@@ -201,13 +221,17 @@ Without these prefixes, the router loses one of its strongest classification sig
 
 ## CORS configuration
 
-By default, the backend reflects any origin. That is convenient for local development, but production deployments should set an explicit allowlist:
+By default, the backend reflects the request origin when
+`PANEL_ALLOWED_ORIGINS` is unset. That local-dev fallback is deliberate, but
+production deployments should set an explicit allowlist:
 
 ```env
 PANEL_ALLOWED_ORIGINS=https://your-app.com,https://staging.your-app.com
 ```
 
-If the current origin is not allowlisted, the backend returns no CORS headers and the browser blocks the request.
+If the current origin is not allowlisted, the backend returns no CORS headers
+even when the bearer key itself is otherwise valid, and the browser blocks the
+request.
 
 Typical symptom: the panel never initializes and no requests succeed in the browser.
 
@@ -227,6 +251,12 @@ Common causes:
 - `apiUrl` points at the wrong backend or environment
 - current origin missing from `PANEL_ALLOWED_ORIGINS`
 - API key expired or deactivated in the admin portal
+
+Portal owns issuing, rotating, deactivating, and product-scoping embed keys, as
+well as managing the optional GitHub-login role rows that clamp a user's
+effective tier below the key's `max_tier`. A Portal proxy is not introduced in
+this phase; later hardening can adopt one explicitly if the public embed-key
+posture becomes insufficient.
 
 When debugging, check:
 1. browser console warnings

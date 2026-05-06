@@ -8,9 +8,9 @@ export async function OPTIONS(req: Request) { return corsPreflight(req); }
 export async function GET(req: Request): Promise<Response> {
   // Auth inline — not via middleware (CVE-2025-29927)
   const key = await validateApiKey(req);
-  if (!key) return unauthorized();
+  if (!key) return withCors(unauthorized(), req);
 
-  if (await isRateLimited(key.productKey)) return tooManyRequests();
+  if (await isRateLimited(key.productKey)) return withCors(tooManyRequests(), req);
 
   const githubLogin = req.headers.get("x-github-login");
 
