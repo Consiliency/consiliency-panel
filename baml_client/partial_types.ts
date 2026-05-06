@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueDraftIn,  IssueDraftOut,  IssueInput,  IssueLabel,  IssueOutput,  KnownFactsInput,  NavigationEntry,  OnTopicResult,  PreSubmitResult,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  RoutingDecision,  SubmissionMetadata,  ToolCallOut,  Viewport } from "./types"
+import type {  AttachmentRef,  ConversationTurn,  FixSuggestion,  IssueClassification,  IssueDraftIn,  IssueDraftOut,  IssueInput,  IssueLabel,  IssueMarkers,  IssueOutput,  IssueSections,  KnownFactsInput,  NavigationEntry,  OnTopicResult,  PipelineHandoffOutput,  PreSubmitResult,  RepoContext,  RepoEnrichment,  RepoIssue,  RepoLabel,  RoutingDecision,  SubmissionMetadata,  ToolCallOut,  Viewport } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -86,15 +86,36 @@ export namespace partial_types {
       name?: string | null
       reason?: string | null
     }
+    export interface IssueMarkers {
+      panel_source?: string | null
+      panel_submission_id?: string | null
+      panel_product_key?: string | null
+      panel_target?: string | null
+      panel_repo_decision?: string | null
+      panel_intake_candidate?: string | null
+      panel_screenshot_kinds?: string | null
+      panel_summary_ref?: string | null
+      panel_pipeline_hint?: string | null
+    }
     export interface IssueOutput {
       plain_summary?: string | null
       technical_details?: string | null
       github_title?: string | null
-      github_body?: string | null
+      issue_sections?: IssueSections | null
       labels: string[]
+      issue_markers?: IssueMarkers | null
+      pipeline_handoff?: PipelineHandoffOutput | null
       assignee?: string | null
       priority?: string | null
       fix_suggestion?: FixSuggestion | null
+    }
+    export interface IssueSections {
+      summary?: string | null
+      user_approved_details?: string | null
+      environment?: string | null
+      routing?: string | null
+      pipeline_intake_handoff?: string | null
+      linked_evidence?: string | null
     }
     export interface KnownFactsInput {
       action?: string | null
@@ -114,6 +135,11 @@ export namespace partial_types {
     export interface OnTopicResult {
       on_topic?: boolean | null
       redirect_hint?: string | null
+    }
+    export interface PipelineHandoffOutput {
+      status?: string | null
+      pipeline_hint?: string | null
+      forwardable_metadata_summary?: string | null
     }
     export interface PreSubmitResult {
       ready?: boolean | null

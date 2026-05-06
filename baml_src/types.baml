@@ -88,12 +88,41 @@ class FixSuggestion {
   confidence string           @description("One of: high, medium, low")
 }
 
+class IssueSections {
+  summary string @description("Body content for the fixed ## Summary section")
+  user_approved_details string @description("Only explicitly user-approved details for the fixed ## User-approved details section")
+  environment string @description("Body content for the fixed ## Environment section")
+  routing string @description("Body content for the fixed ## Routing section")
+  pipeline_intake_handoff string @description("Bounded metadata and marker references for the fixed ## Pipeline intake handoff section")
+  linked_evidence string @description("Body content for the fixed ## Linked evidence section using summaries or links, not raw payload dumps")
+}
+
+class IssueMarkers {
+  panel_source string
+  panel_submission_id string
+  panel_product_key string
+  panel_target string
+  panel_repo_decision string
+  panel_intake_candidate string
+  panel_screenshot_kinds string
+  panel_summary_ref string
+  panel_pipeline_hint string
+}
+
+class PipelineHandoffOutput {
+  status string @description("One of: candidate, deferred")
+  pipeline_hint string @description("Short bounded explanation of why this is or is not a governed intake candidate")
+  forwardable_metadata_summary string @description("Short summary of the bounded metadata that downstream consumers may forward")
+}
+
 class IssueOutput {
   plain_summary string @description("2-3 sentences, non-technical, suitable for any user")
-  technical_details string @description("Markdown with full technical context, console errors, environment info")
+  technical_details string @description("Short markdown summary for persistence and comment context, not the full issue body")
   github_title string @description("Concise issue title under 72 characters")
-  github_body string @description("Full GitHub issue body in markdown with template sections")
-  labels string[]
+  issue_sections IssueSections
+  labels string[] @description("Apply these labels verbatim; include only bounded GitHub label names")
+  issue_markers IssueMarkers
+  pipeline_handoff PipelineHandoffOutput
   assignee string?
   priority string @description("One of: critical, high, normal, low")
   fix_suggestion FixSuggestion? @description("Present only for team tier when file contents were available")

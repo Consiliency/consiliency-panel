@@ -1,3 +1,5 @@
+import type { PanelIssueTechnicalDetails } from "./panel";
+
 // Database row types — mirrors Supabase table schemas
 
 export interface PanelApiKey {
@@ -40,7 +42,7 @@ export interface PanelIssue {
   github_issue_number: number | null;
   github_issue_url: string | null;
   plain_summary: string;
-  technical_details: unknown; // jsonb
+  technical_details: PanelIssueTechnicalDetails | null; // jsonb
   labels: string[] | null;
   created_at: string;
 }

@@ -113,15 +113,40 @@ export interface IssueLabel {
   
 }
 
+export interface IssueMarkers {
+  panel_source: string
+  panel_submission_id: string
+  panel_product_key: string
+  panel_target: string
+  panel_repo_decision: string
+  panel_intake_candidate: string
+  panel_screenshot_kinds: string
+  panel_summary_ref: string
+  panel_pipeline_hint: string
+  
+}
+
 export interface IssueOutput {
   plain_summary: string
   technical_details: string
   github_title: string
-  github_body: string
+  issue_sections: IssueSections
   labels: string[]
+  issue_markers: IssueMarkers
+  pipeline_handoff: PipelineHandoffOutput
   assignee?: string | null
   priority: string
   fix_suggestion?: FixSuggestion | null
+  
+}
+
+export interface IssueSections {
+  summary: string
+  user_approved_details: string
+  environment: string
+  routing: string
+  pipeline_intake_handoff: string
+  linked_evidence: string
   
 }
 
@@ -147,6 +172,13 @@ export interface NavigationEntry {
 export interface OnTopicResult {
   on_topic: boolean
   redirect_hint?: string | null
+  
+}
+
+export interface PipelineHandoffOutput {
+  status: string
+  pipeline_hint: string
+  forwardable_metadata_summary: string
   
 }
 

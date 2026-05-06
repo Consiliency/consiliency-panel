@@ -43,13 +43,19 @@ export default class TypeBuilder {
     
     IssueLabel: ClassViewer<'IssueLabel', "name" | "reason">;
     
-    IssueOutput: ClassViewer<'IssueOutput', "plain_summary" | "technical_details" | "github_title" | "github_body" | "labels" | "assignee" | "priority" | "fix_suggestion">;
+    IssueMarkers: ClassViewer<'IssueMarkers', "panel_source" | "panel_submission_id" | "panel_product_key" | "panel_target" | "panel_repo_decision" | "panel_intake_candidate" | "panel_screenshot_kinds" | "panel_summary_ref" | "panel_pipeline_hint">;
+    
+    IssueOutput: ClassViewer<'IssueOutput', "plain_summary" | "technical_details" | "github_title" | "issue_sections" | "labels" | "issue_markers" | "pipeline_handoff" | "assignee" | "priority" | "fix_suggestion">;
+    
+    IssueSections: ClassViewer<'IssueSections', "summary" | "user_approved_details" | "environment" | "routing" | "pipeline_intake_handoff" | "linked_evidence">;
     
     KnownFactsInput: ClassViewer<'KnownFactsInput', "action" | "actual" | "expected" | "severity" | "repro_steps" | "first_seen" | "frequency" | "kind">;
     
     NavigationEntry: ClassViewer<'NavigationEntry', "url" | "title" | "timestamp">;
     
     OnTopicResult: ClassViewer<'OnTopicResult', "on_topic" | "redirect_hint">;
+    
+    PipelineHandoffOutput: ClassViewer<'PipelineHandoffOutput', "status" | "pipeline_hint" | "forwardable_metadata_summary">;
     
     PreSubmitResult: ClassViewer<'PreSubmitResult', "ready" | "reason">;
     
@@ -74,7 +80,7 @@ export default class TypeBuilder {
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueDraftIn","IssueDraftOut","IssueInput","IssueLabel","IssueOutput","KnownFactsInput","NavigationEntry","OnTopicResult","PreSubmitResult","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","RoutingDecision","SubmissionMetadata","ToolCallOut","Viewport",
+            "AttachmentRef","ConversationTurn","FixSuggestion","IssueClassification","IssueDraftIn","IssueDraftOut","IssueInput","IssueLabel","IssueMarkers","IssueOutput","IssueSections","KnownFactsInput","NavigationEntry","OnTopicResult","PipelineHandoffOutput","PreSubmitResult","RepoContext","RepoEnrichment","RepoIssue","RepoLabel","RoutingDecision","SubmissionMetadata","ToolCallOut","Viewport",
           ]),
           enums: new Set([
             
@@ -114,8 +120,16 @@ export default class TypeBuilder {
           "name","reason",
         ]);
         
+        this.IssueMarkers = this.tb.classViewer("IssueMarkers", [
+          "panel_source","panel_submission_id","panel_product_key","panel_target","panel_repo_decision","panel_intake_candidate","panel_screenshot_kinds","panel_summary_ref","panel_pipeline_hint",
+        ]);
+        
         this.IssueOutput = this.tb.classViewer("IssueOutput", [
-          "plain_summary","technical_details","github_title","github_body","labels","assignee","priority","fix_suggestion",
+          "plain_summary","technical_details","github_title","issue_sections","labels","issue_markers","pipeline_handoff","assignee","priority","fix_suggestion",
+        ]);
+        
+        this.IssueSections = this.tb.classViewer("IssueSections", [
+          "summary","user_approved_details","environment","routing","pipeline_intake_handoff","linked_evidence",
         ]);
         
         this.KnownFactsInput = this.tb.classViewer("KnownFactsInput", [
@@ -128,6 +142,10 @@ export default class TypeBuilder {
         
         this.OnTopicResult = this.tb.classViewer("OnTopicResult", [
           "on_topic","redirect_hint",
+        ]);
+        
+        this.PipelineHandoffOutput = this.tb.classViewer("PipelineHandoffOutput", [
+          "status","pipeline_hint","forwardable_metadata_summary",
         ]);
         
         this.PreSubmitResult = this.tb.classViewer("PreSubmitResult", [

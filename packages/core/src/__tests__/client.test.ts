@@ -100,6 +100,36 @@ describe("PanelApiClient", () => {
       expect(events.map((e) => e.type)).toEqual(["progress", "completed"]);
     });
 
+    it("forwards pipeline_handoff events unchanged", async () => {
+      fetchSpy.mockResolvedValueOnce(makeSseResponse([
+        {
+          type: "pipeline_handoff",
+          target: "app",
+          routingTarget: "host_app",
+          targetRepo: "Owner/repo",
+          handoffStatus: "candidate",
+          issueLabels: ["source:panel", "pipeline-intake:candidate"],
+          trackingMarkers: { panel_submission_id: "sub-xyz" },
+          forwardableMetadata: { page_url: "https://example.com", page_title: "Example", submission_timestamp: "2026-01-01T00:00:00Z" },
+          pipelineHint: "core workflow blocker",
+        },
+        { type: "completed", issueUrl: "https://github.com/issues/1", issueNumber: 1 },
+      ]));
+
+      const events: Array<Record<string, unknown>> = [];
+      await client.streamProcess("sub-xyz", (e) => events.push(e as unknown as Record<string, unknown>), {
+        repo: "Owner/repo",
+      });
+
+      expect(events[0]).toMatchObject({
+        type: "pipeline_handoff",
+        target: "app",
+        routingTarget: "host_app",
+        handoffStatus: "candidate",
+        pipelineHint: "core workflow blocker",
+      });
+    });
+
     it("sends repo and panelRepo in POST body", async () => {
       fetchSpy.mockResolvedValueOnce(makeSseResponse([
         { type: "completed", issueUrl: "https://github.com/issues/2", issueNumber: 2 },

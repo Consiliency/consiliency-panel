@@ -83,34 +83,40 @@ function FormatAsGitHubIssue(
 
     Create:
     1. plain_summary: 2-3 non-technical sentences suitable for any user. No jargon.
-    2. technical_details: Markdown with environment, console context, and file references.
+    2. technical_details: Short markdown summary with environment, file references, and bounded console context for persistence. Do not dump the full transcript, raw console logs, or screenshot payloads.
     3. github_title: Under 72 characters. Starts with category prefix if bug/feature.
-    4. github_body: Full issue body with these sections:
-       ## Description
-       ## Steps to Reproduce (if applicable)
-       ## Expected Behavior
-       ## Actual Behavior (if applicable)
-       ## Environment
-       ## Additional Context
-       ## Navigation Path (if navigation_breadcrumb provided)
-       Table with page title, URL, and timestamp columns.
-       ## Component Hint (if component_hint provided)
-       Show as: `Likely source file: \`path\``
-       ## Console Errors (if console_errors provided)
-       Code block with the error list.
-       ## Console Warnings (if console_warnings provided)
-       Collapsible <details><summary>Console Warnings (N)</summary> block with a code block inside.
-       ## Attachments (if attachment_urls provided)
-       Bulleted list with markdown image links for screenshots.
-       {% if fix_suggestion %}
-       ## Suggested Fix
-       Include the root cause hypothesis, suggested approach, relevant function names,
-       and code hint (if any). End with "_Confidence: {{ fix_suggestion.confidence }}_".
-       {% endif %}
-    5. labels: Array of label names to apply.
-    6. assignee: GitHub login or null.
-    7. priority: critical, high, normal, or low.
-    8. fix_suggestion: Pass through the fix_suggestion object as-is if provided, otherwise null.
+    4. issue_sections: Return exactly these fixed sections and only the body text for each section:
+       - summary -> `## Summary`
+       - user_approved_details -> `## User-approved details`
+       - environment -> `## Environment`
+       - routing -> `## Routing`
+       - pipeline_intake_handoff -> `## Pipeline intake handoff`
+       - linked_evidence -> `## Linked evidence`
+       Rules:
+       - `user_approved_details` must contain only details the user explicitly approved for external write.
+       - `pipeline_intake_handoff` must contain bounded metadata and marker references only, never raw transcript dumps, raw console log blocks, or raw screenshot payloads.
+       - `linked_evidence` may summarize or link transcript, console, and screenshot evidence, but must not inline secret-bearing values.
+       - If reproduction steps are useful, weave them into `user_approved_details` instead of creating new sections.
+       - If navigation, component hint, console context, attachments, or fix suggestion are relevant, place them in the fixed sections above without inventing extra headings.
+    5. labels: Array of label names to apply. Include the frozen routing/intake labels when justified and any additional bounded repo labels that should be applied verbatim.
+    6. issue_markers: Provide exact string values for the frozen marker keys:
+       - panel_source
+       - panel_submission_id
+       - panel_product_key
+       - panel_target
+       - panel_repo_decision
+       - panel_intake_candidate
+       - panel_screenshot_kinds
+       - panel_summary_ref
+       - panel_pipeline_hint
+       Use concise bounded values only. `panel_source` must be `panel`.
+    7. pipeline_handoff:
+       - status: `candidate` when this should enter governed development intake, otherwise `deferred`
+       - pipeline_hint: short bounded explanation of that decision
+       - forwardable_metadata_summary: short summary of the structured metadata safe to forward downstream
+    8. assignee: GitHub login or null.
+    9. priority: critical, high, normal, or low.
+    10. fix_suggestion: Pass through the fix_suggestion object as-is if provided, otherwise null.
 
     {{ ctx.output_format }}
   "#

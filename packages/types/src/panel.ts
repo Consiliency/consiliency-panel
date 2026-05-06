@@ -66,6 +66,12 @@ export type PanelPipelineIntakeCandidateLabel =
   | "pipeline-intake:candidate"
   | "pipeline-intake:deferred";
 
+export type PanelRepoDecision = "app" | "panel";
+
+export type PanelRepoRoutingTarget = "host_app" | "panel_widget";
+
+export type PanelPipelineHandoffStatus = "candidate" | "deferred";
+
 export interface PanelPipelineIssueLabels {
   source: readonly PanelPipelineSourceLabel[];
   routingTargets: readonly PanelPipelineTargetLabel[];
@@ -93,6 +99,38 @@ export interface PanelPipelineForwardableMetadata {
   screenshot_kinds?: Array<NonNullable<AttachmentRef["screenshotKind"]>>;
   navigation_summary?: string;
   context_summary?: string;
+}
+
+export type PanelIssueMarkerMap = Partial<
+  Record<PanelPipelineMarkerKey, string>
+>;
+
+export interface PanelIssueSections {
+  summary: string;
+  user_approved_details: string;
+  environment: string;
+  routing: string;
+  pipeline_intake_handoff: string;
+  linked_evidence: string;
+}
+
+export interface PanelPipelineHandoff {
+  status: PanelPipelineHandoffStatus;
+  repoDecision: PanelRepoDecision;
+  routingTarget: PanelRepoRoutingTarget;
+  targetRepo: string;
+  issueLabels: string[];
+  trackingMarkers: PanelIssueMarkerMap;
+  forwardableMetadata: PanelPipelineForwardableMetadata;
+  pipelineHint: string;
+}
+
+export interface PanelIssueTechnicalDetails {
+  priority: string;
+  rawSummary: string;
+  issueSections: PanelIssueSections;
+  issueMarkers: PanelIssueMarkerMap;
+  pipelineHandoff: PanelPipelineHandoff;
 }
 
 export interface PanelPipelineLinkedEvidencePolicy {
@@ -427,16 +465,22 @@ export interface PreSubmitRejection {
 }
 
 export interface ProcessEvent {
-  type: "progress" | "completed" | "routing" | "error";
+  type: "progress" | "completed" | "routing" | "pipeline_handoff" | "error";
   message?: string;
   issueUrl?: string;
   issueNumber?: number;
   title?: string;
   plainSummary?: string;
   /** Emitted on routing events: which repo was chosen and why */
-  target?: "app" | "panel";
+  target?: PanelRepoDecision;
+  routingTarget?: PanelRepoRoutingTarget;
   targetRepo?: string;
   confidence?: string;
+  handoffStatus?: PanelPipelineHandoffStatus;
+  issueLabels?: string[];
+  trackingMarkers?: PanelIssueMarkerMap;
+  forwardableMetadata?: PanelPipelineForwardableMetadata;
+  pipelineHint?: string;
 }
 
 export interface RepoContext {
