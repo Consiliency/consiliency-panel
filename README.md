@@ -149,6 +149,19 @@ Turn the picker off in production via embedder config (`betaModelSelection: fals
 
 For the full embedding reference — including required config, `panelRepo` routing, screenshot naming, CORS allowlisting, and init-failure diagnosis — see [`docs/embedder-contract.md`](docs/embedder-contract.md).
 
+## Feedback-to-pipeline intake
+
+Panel can attach a bounded feedback-to-pipeline intake hint to the GitHub issue
+handoff, but it does not orchestrate Governed Pipeline itself. This contract
+distinguishes `host_app`, `panel_widget`, and `pipeline_intake` routing, keeps
+Message Board callbacks deferred, and treats Portal plus Governed Pipeline as
+the downstream consumers of the hint rather than Panel-owned execution.
+
+`PANELINTAKE` freezes the contract only. `PANELROUTE` is the later phase that
+threads these markers into backend process events and issue formatting. For the
+exact body sections, label families, marker keys, metadata budget, and
+user-approval/redaction rules, see [`docs/embedder-contract.md`](docs/embedder-contract.md).
+
 ## Repo Routing (`panelRepo`)
 
 Use `panelRepo` if you want panel-widget bugs routed separately from host-app issues. Full routing behavior and screenshot naming requirements are documented in [`docs/embedder-contract.md`](docs/embedder-contract.md).

@@ -5,6 +5,7 @@ This document is the single reference for teams embedding `@consiliency/panel` i
 It covers:
 - required client and backend configuration
 - repo routing via `panelRepo`
+- feedback-to-pipeline intake handoff contract
 - screenshot naming signals used by the router
 - CORS behavior and production allowlisting
 - what init failures look like and how to diagnose them
@@ -107,6 +108,85 @@ At submit time, the `RouteToRepo` agent uses:
 to decide whether the report belongs in the host app repo or the panel repo.
 
 The routing decision is emitted as a `routing` SSE event before issue creation.
+
+## Feedback-to-pipeline intake handoff
+
+Panel can emit a bounded feedback-to-pipeline intake hint through the GitHub
+issue it creates, but this phase freezes only the contract surface. Panel is
+not the pipeline orchestrator. Portal owns embedder credentials and later
+intake visibility, Governed Pipeline consumes the intake hint in a later phase,
+and Message Board callbacks remain out of scope.
+
+### Routing vocabulary
+
+The intake contract distinguishes three routing targets:
+
+- `host_app` for issues that belong to the embedder's application repo
+- `panel_widget` for issues that belong to the panel widget repo via `panelRepo`
+- `pipeline_intake` for issues that should also be treated as governed delivery intake downstream
+
+### GitHub issue body contract
+
+Any GitHub issue that carries a pipeline intake hint must preserve these exact
+section headings:
+
+- `## Summary`
+- `## User-approved details`
+- `## Environment`
+- `## Routing`
+- `## Pipeline intake handoff`
+- `## Linked evidence`
+
+`## User-approved details` is limited to content the user explicitly approved
+for external write. `## Pipeline intake handoff` is for bounded metadata and
+marker references only, not raw transcript or screenshot payloads.
+
+### Label families and tracking markers
+
+The frozen label families are:
+
+- source: `source:panel`
+- routing target: `target:host_app`, `target:panel_widget`, `target:pipeline_intake`
+- intake classification: `pipeline-intake:candidate`, `pipeline-intake:deferred`
+
+The frozen tracking-marker keys are:
+
+- `panel_source`
+- `panel_submission_id`
+- `panel_product_key`
+- `panel_target`
+- `panel_repo_decision`
+- `panel_intake_candidate`
+- `panel_screenshot_kinds`
+- `panel_summary_ref`
+- `panel_pipeline_hint`
+
+### Structured metadata budget
+
+The only fields that may travel downstream as structured intake metadata are:
+
+- page URL
+- page title
+- submission timestamp
+- GitHub login
+- selected model ID
+- component hint
+- screenshot kinds
+- bounded navigation summary
+- bounded context summary
+
+Raw transcript dumps, raw console logs, full screenshot payloads, and any
+secret-bearing values must not be forwarded inline in the intake metadata.
+Those materials stay linked, summarized, or excluded according to the rule set
+below.
+
+### Linked evidence and safety rules
+
+- Transcript content must be summarized or linked, not dumped verbatim by default.
+- Console output must be summarized or linked, not attached as raw log blocks.
+- Screenshot evidence must stay linked by reference rather than inlined as payload.
+- Secret-bearing values must be redacted or excluded before any external write.
+- Every downstream write still requires explicit user approval before the issue body or intake hint is emitted.
 
 ## Screenshot naming convention
 

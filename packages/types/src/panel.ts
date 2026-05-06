@@ -31,6 +31,164 @@ export interface SubmissionMetadata {
   referrer: string;
 }
 
+export type PanelPipelineIntakeTarget =
+  | "host_app"
+  | "panel_widget"
+  | "pipeline_intake";
+
+export type PanelPipelineIssueBodySection =
+  | "## Summary"
+  | "## User-approved details"
+  | "## Environment"
+  | "## Routing"
+  | "## Pipeline intake handoff"
+  | "## Linked evidence";
+
+export type PanelPipelineMarkerKey =
+  | "panel_source"
+  | "panel_submission_id"
+  | "panel_product_key"
+  | "panel_target"
+  | "panel_repo_decision"
+  | "panel_intake_candidate"
+  | "panel_screenshot_kinds"
+  | "panel_summary_ref"
+  | "panel_pipeline_hint";
+
+export type PanelPipelineSourceLabel = "source:panel";
+
+export type PanelPipelineTargetLabel =
+  | "target:host_app"
+  | "target:panel_widget"
+  | "target:pipeline_intake";
+
+export type PanelPipelineIntakeCandidateLabel =
+  | "pipeline-intake:candidate"
+  | "pipeline-intake:deferred";
+
+export interface PanelPipelineIssueLabels {
+  source: readonly PanelPipelineSourceLabel[];
+  routingTargets: readonly PanelPipelineTargetLabel[];
+  intakeCandidates: readonly PanelPipelineIntakeCandidateLabel[];
+}
+
+export type PanelPipelineForwardableMetadataKey =
+  | "page_url"
+  | "page_title"
+  | "submission_timestamp"
+  | "github_login"
+  | "selected_model_id"
+  | "component_hint"
+  | "screenshot_kinds"
+  | "navigation_summary"
+  | "context_summary";
+
+export interface PanelPipelineForwardableMetadata {
+  page_url: string;
+  page_title: string;
+  submission_timestamp: string;
+  github_login?: string;
+  selected_model_id?: string;
+  component_hint?: string;
+  screenshot_kinds?: Array<NonNullable<AttachmentRef["screenshotKind"]>>;
+  navigation_summary?: string;
+  context_summary?: string;
+}
+
+export interface PanelPipelineLinkedEvidencePolicy {
+  transcript: "summarize_or_link";
+  console_logs: "summarize_or_link";
+  screenshots: "link_only";
+  secret_bearing_values: "exclude";
+}
+
+export interface PanelPipelineApprovalRequirement {
+  explicitUserApprovalRequired: true;
+  redactBeforeExternalWrite: true;
+  downstreamConsumers: ["github_issue_metadata", "linked_evidence_only"];
+}
+
+export interface PanelPipelineIntakeContract {
+  source: "panel";
+  targets: readonly PanelPipelineIntakeTarget[];
+  issueBodySections: readonly PanelPipelineIssueBodySection[];
+  labels: PanelPipelineIssueLabels;
+  markerKeys: readonly PanelPipelineMarkerKey[];
+  forwardableMetadataKeys: readonly PanelPipelineForwardableMetadataKey[];
+  linkedEvidencePolicy: PanelPipelineLinkedEvidencePolicy;
+  approvalRequirement: PanelPipelineApprovalRequirement;
+}
+
+export const PANEL_PIPELINE_INTAKE_TARGETS = [
+  "host_app",
+  "panel_widget",
+  "pipeline_intake",
+] as const satisfies readonly PanelPipelineIntakeTarget[];
+
+export const PANEL_PIPELINE_ISSUE_BODY_SECTIONS = [
+  "## Summary",
+  "## User-approved details",
+  "## Environment",
+  "## Routing",
+  "## Pipeline intake handoff",
+  "## Linked evidence",
+] as const satisfies readonly PanelPipelineIssueBodySection[];
+
+export const PANEL_PIPELINE_MARKER_KEYS = [
+  "panel_source",
+  "panel_submission_id",
+  "panel_product_key",
+  "panel_target",
+  "panel_repo_decision",
+  "panel_intake_candidate",
+  "panel_screenshot_kinds",
+  "panel_summary_ref",
+  "panel_pipeline_hint",
+] as const satisfies readonly PanelPipelineMarkerKey[];
+
+export const PANEL_PIPELINE_FORWARDABLE_METADATA_KEYS = [
+  "page_url",
+  "page_title",
+  "submission_timestamp",
+  "github_login",
+  "selected_model_id",
+  "component_hint",
+  "screenshot_kinds",
+  "navigation_summary",
+  "context_summary",
+] as const satisfies readonly PanelPipelineForwardableMetadataKey[];
+
+export const PANEL_PIPELINE_INTAKE_CONTRACT: PanelPipelineIntakeContract = {
+  source: "panel",
+  targets: PANEL_PIPELINE_INTAKE_TARGETS,
+  issueBodySections: PANEL_PIPELINE_ISSUE_BODY_SECTIONS,
+  labels: {
+    source: ["source:panel"],
+    routingTargets: [
+      "target:host_app",
+      "target:panel_widget",
+      "target:pipeline_intake",
+    ],
+    intakeCandidates: [
+      "pipeline-intake:candidate",
+      "pipeline-intake:deferred",
+    ],
+  },
+  markerKeys: PANEL_PIPELINE_MARKER_KEYS,
+  forwardableMetadataKeys: PANEL_PIPELINE_FORWARDABLE_METADATA_KEYS,
+  linkedEvidencePolicy: {
+    transcript: "summarize_or_link",
+    console_logs: "summarize_or_link",
+    screenshots: "link_only",
+    secret_bearing_values: "exclude",
+  },
+  approvalRequirement: {
+    explicitUserApprovalRequired: true,
+    redactBeforeExternalWrite: true,
+    downstreamConsumers: ["github_issue_metadata", "linked_evidence_only"],
+  },
+};
+
 export interface PanelConfig {
   /** Backend API URL, e.g. https://panel-api.consiliency.io */
   apiUrl: string;
