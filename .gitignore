@@ -14,3 +14,4 @@ coverage/
 .baml_cache/
 .env*.local
 *.tsbuildinfo
+/.dev-skills/
