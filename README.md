@@ -1,6 +1,34 @@
 # @consiliency/panel
 
-An embeddable, mode-aware chat panel for any web app. Guides users through structured feedback and issue creation, then posts well-formed GitHub issues via a BAML-powered pipeline.
+**A drop-in feedback button that turns messy user reports into clean, ready-to-work GitHub issues.**
+
+Add one small snippet to your web app and a **Feedback** button appears in the corner. When a user clicks it, a friendly chat helps them describe a bug or idea — and can even grab a screenshot. Behind the scenes, AI rewrites what they said into a well-structured GitHub issue, with the right labels and context, filed straight to your repo.
+
+## Why it exists
+
+Most user feedback is vague ("it's broken") and scattered across email, chat, and support tickets — so your team wastes time chasing details. Panel guides users to give *useful* detail up front, then does the formatting for you, so every report lands as a tidy, actionable issue.
+
+## Who it's for
+
+Product and engineering teams who want higher-quality bug reports and feature requests — without building and maintaining their own feedback tool.
+
+## What your users experience
+
+1. Click the **Feedback** button.
+2. Chat through the problem (attach a screenshot if it helps).
+3. Done — a clean GitHub issue is created for your team.
+
+## Highlights
+
+- **Drop-in** — one snippet; works in any web app (framework-agnostic core + a React adapter).
+- **On-brand** — themeable via CSS variables to match your product.
+- **AI-drafted issues** — classifies the report, enriches it with repo context, and formats it as a proper GitHub issue.
+- **Built-in screenshot capture.**
+- **Tiered context** — guests, contractors, and team members each get an appropriate level of repo detail.
+
+## See it in action
+
+_Screenshot and live demo coming soon._
 
 ## Packages
 
