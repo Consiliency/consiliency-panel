@@ -1,0 +1,237 @@
+# @consiliency/panel
+
+**A drop-in feedback button that turns messy user reports into clean, ready-to-work GitHub issues.**
+
+Add one small snippet to your web app and a **Feedback** button appears in the corner. When a user clicks it, a friendly chat helps them describe a bug or idea — and can even grab a screenshot. Behind the scenes, AI rewrites what they said into a well-structured GitHub issue, with the right labels and context, filed straight to your repo.
+
+## Why it exists
+
+Most user feedback is vague ("it's broken") and scattered across email, chat, and support tickets — so your team wastes time chasing details. Panel guides users to give *useful* detail up front, then does the formatting for you, so every report lands as a tidy, actionable issue.
+
+## Who it's for
+
+Product and engineering teams who want higher-quality bug reports and feature requests — without building and maintaining their own feedback tool.
+
+## What your users experience
+
+1. Click the **Feedback** button.
+2. Chat through the problem (attach a screenshot if it helps).
+3. Done — a clean GitHub issue is created for your team.
+
+## Highlights
+
+- **Drop-in** — one snippet; works in any web app (framework-agnostic core + a React adapter).
+- **On-brand** — themeable via CSS variables to match your product.
+- **AI-drafted issues** — classifies the report, enriches it with repo context, and formats it as a proper GitHub issue.
+- **Built-in screenshot capture.**
+- **Tiered context** — guests, contractors, and team members each get an appropriate level of repo detail.
+
+## See it in action
+
+_Screenshot and live demo coming soon._
+
+## Packages
+
+| Package | Description |
+|---|---|
+| `@consiliency/panel-types` | Shared TypeScript interfaces |
+| `@consiliency/panel-core` | Framework-agnostic SDK (metadata, conversation, API client) |
+| `@consiliency/panel-react` | React adapter with Shadow DOM mount, chat UI, screenshot capture |
+
+## Install
+
+Two supported paths:
+
+### A. From the `release` branch (recommended for outside embedders)
+
+CI maintains a `release` branch that ships a prebuilt, self-contained artifact — no GitHub Packages token, no workspace resolution.
+
+```bash
+pnpm add "github:Consiliency/consiliency-panel#release"
+# or
+npm install "github:Consiliency/consiliency-panel#release"
+```
+
+Then:
+
+```tsx
+import { mountPanel } from "@consiliency/panel-react";
+import "@consiliency/panel-react/styles";
+```
+
+The package reads from `./dist` with `@consiliency/panel-core` and `@consiliency/panel-types` inlined.
+
+### B. From GitHub Packages (for org members / CI with a `read:packages` token)
+
+```bash
+pnpm add @consiliency/panel-react
+```
+
+```
+# .npmrc
+@consiliency:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+```
+
+## Quick Start
+
+```tsx
+import { mountPanel } from "@consiliency/panel-react";
+import "@consiliency/panel-react/styles";
+
+mountPanel({
+  apiUrl: process.env.NEXT_PUBLIC_PANEL_API_URL,
+  apiKey: process.env.NEXT_PUBLIC_PANEL_API_KEY,
+  repo: "your-org/your-repo",
+});
+```
+
+`NEXT_PUBLIC_PANEL_API_KEY` is a Portal-issued embed credential. It is
+intentionally public in browser code, but the backend limits it to the key's
+`product_key`, `max_tier`, `active` state, optional expiry, and origin
+allowlisting. Do not treat it like a service credential or put service-role
+secrets in client config.
+
+Or use the React provider directly:
+
+```tsx
+import { PanelProvider, PanelButton, PanelSheet } from "@consiliency/panel-react";
+
+export default function Layout({ children }) {
+  return (
+    <PanelProvider
+      config={{
+        apiUrl: process.env.NEXT_PUBLIC_PANEL_API_URL,
+        apiKey: process.env.NEXT_PUBLIC_PANEL_API_KEY,
+        repo: "your-org/your-repo",
+      }}
+    >
+      {children}
+      <PanelButton />
+      <PanelSheet />
+    </PanelProvider>
+  );
+}
+```
+
+## Theming
+
+Override CSS custom properties on `:root` (or pass a `theme` object to `mountPanel`):
+
+| Variable | Default | Description |
+|---|---|---|
+| `--panel-bg` | `#ffffff` | Panel background |
+| `--panel-fg` | `#111827` | Panel text color |
+| `--panel-border` | `#e5e7eb` | Border color |
+| `--panel-accent` | `#6366f1` | Accent / button color |
+| `--panel-radius` | `0.75rem` | Border radius |
+| `--panel-width` | `420px` | Panel sheet width |
+| `--panel-button-position-bottom` | `1.5rem` | FAB distance from bottom |
+| `--panel-button-position-right` | `1.5rem` | FAB distance from right |
+
+```css
+:root {
+  --panel-accent: #your-brand-color;
+  --panel-width: 380px;
+}
+```
+
+## Access Tiers
+
+The panel resolves a trust tier from the caller's API key + GitHub login:
+
+| Tier | Context depth |
+|---|---|
+| `guest` | Labels + recent open issues |
+| `contractor` | + File tree (no blame) |
+| `team` | + Blame, PRs, CI status |
+
+## BAML Customization
+
+The issue pipeline (`ClassifyIssue → EnrichWithRepoContext → FormatAsGitHubIssue`) lives in `baml_src/`. Edit the prompts there and regenerate:
+
+```bash
+baml-cli generate
+```
+
+Model assignments (in `baml_src/clients.baml`):
+- `ClassifyIssue` — `claude-haiku-4-5` (fast triage)
+- `EnrichWithRepoContext` — `claude-sonnet-4-6` (code reasoning)
+- `FormatAsGitHubIssue` — `claude-sonnet-4-6` (quality output)
+
+### Agentic feedback (beta)
+
+The `feedback` mode runs an LLM-driven intake loop (`NextTurn` → structured tool calls → editable draft → user-approved submit → optional `NextCommentTurn` for follow-up). While in beta, embedders see an in-panel **model picker** with five multimodal options for the conversation agent:
+
+| Label | BAML client | Provider |
+|---|---|---|
+| GPT-5 Nano (default) | `OpenAINano` | OpenAI |
+| Claude Haiku 4.5 | `ClaudeHaiku` | Anthropic |
+| Gemini 3.1 Flash-Lite | `GeminiFlashLite` | Google / OpenRouter |
+| Gemma 3 27B | `Gemma3` | Google / OpenRouter |
+| Kimi-VL | `KimiVL` | Moonshot / OpenRouter |
+
+Turn the picker off in production via embedder config (`betaModelSelection: false`) or backend env (`PANEL_BETA_MODEL_SELECTION=false`). When disabled, the backend ignores any `selectedModelId` and falls back to the default client for both intake and comment drafting. A fixed `TopicCheck` client (always cheapest Nano) runs an input-scope guardrail before every agent turn and is never user-selectable.
+
+## Admin Setup
+
+1. **Create an API key** — navigate to `/admin/api-keys` in the portal. Issue a product-scoped embed key and copy the raw key once; Portal does not store the raw value.
+2. **Grant roles** — navigate to `/admin/roles` to assign `guest`, `contractor`, or `team` tier to GitHub logins for the relevant product.
+3. **Coordinate origins** — set the production/staging origins in `PANEL_ALLOWED_ORIGINS` on the panel backend before rollout.
+4. **Configure the embed** — set `NEXT_PUBLIC_PANEL_API_URL` and `NEXT_PUBLIC_PANEL_API_KEY` in your app's environment.
+5. **Lifecycle operations stay in Portal** — Portal owns rotation, disablement, replacement, and one-time raw-key copy for embedder credentials.
+
+## Embedder Contract
+
+For the full embedding reference — including required config, public embed-key posture, `panelRepo` routing, screenshot naming, CORS allowlisting, and init-failure diagnosis — see [`docs/embedder-contract.md`](docs/embedder-contract.md).
+
+## Feedback-to-pipeline intake
+
+Panel can attach a bounded feedback-to-pipeline intake hint to the GitHub issue
+handoff, but it does not orchestrate Governed Pipeline itself. This contract
+distinguishes `host_app`, `panel_widget`, and `pipeline_intake` routing, keeps
+Message Board callbacks deferred, and treats Portal plus Governed Pipeline as
+the downstream consumers of the hint rather than Panel-owned execution.
+
+`PANELINTAKE` freezes the contract only. `PANELROUTE` is the later phase that
+threads these markers into backend process events and issue formatting. For the
+exact body sections, label families, marker keys, metadata budget, and
+user-approval/redaction rules, see [`docs/embedder-contract.md`](docs/embedder-contract.md).
+
+`PANELPROOF` is the acceptance-proof packet for this handoff path. Use
+[`docs/panelproof-acceptance.md`](docs/panelproof-acceptance.md) as the source
+of truth for proof commands, environment and commit capture, rollback, downstream
+Portal linkage expectations, Governed Pipeline consume-or-defer status, and the
+next adoption step.
+
+Proof artifacts stay redacted. Do not record raw API keys, GitHub tokens, full
+transcripts, raw screenshot payloads, raw console dumps, or secret environment
+values in release notes or handoff evidence.
+
+## Repo Routing (`panelRepo`)
+
+Use `panelRepo` if you want panel-widget bugs routed separately from host-app issues. Full routing behavior and screenshot naming requirements are documented in [`docs/embedder-contract.md`](docs/embedder-contract.md).
+
+## CORS Configuration (`PANEL_ALLOWED_ORIGINS`)
+
+For production deploys, set `PANEL_ALLOWED_ORIGINS` explicitly. Leaving it unset is only a local-dev fallback that reflects request origins. Configuration details and failure modes are documented in [`docs/embedder-contract.md`](docs/embedder-contract.md).
+
+## Diagnosing Init Failures
+
+If the panel button does not render, check the browser console for `[Panel]` warnings and use the troubleshooting guidance in [`docs/embedder-contract.md`](docs/embedder-contract.md).
+
+## Backend Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `SUPABASE_URL` | Yes | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Yes | Supabase service role key |
+| `ANTHROPIC_API_KEY` | Yes | For BAML pipeline |
+| `PANEL_INTERNAL_SECRET` | Yes | Internal secret for process route |
+| `GITHUB_TOKEN_GUEST` | Yes | Read-only token (labels + issues) |
+| `GITHUB_TOKEN_CONTRACTOR` | Yes | Read-only token (+ file tree) |
+| `GITHUB_TOKEN_TEAM` | Yes | Read token (+ blame, PRs, CI) |
+| `NEXT_PUBLIC_PANEL_API_URL` | Yes | Public API URL |
+| `PANEL_ALLOWED_ORIGINS` | Optional | Comma-separated allowed origins (defaults to allow-all) |
+| `UPSTASH_REDIS_REST_URL` | Optional | Rate limiting (falls back to allow-all) |
+| `UPSTASH_REDIS_REST_TOKEN` | Optional | Rate limiting |
